@@ -47,4 +47,9 @@ class Site extends Model
             ->withTimestamps();
     }
 
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(JobPost::class);
+    }
+
 }

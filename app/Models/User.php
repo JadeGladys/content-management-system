@@ -2,20 +2,46 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    
+    use HasFactory, Notifiable, HasUlids;
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'created_by',
+        'updated_by',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -25,8 +51,52 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function createdUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'created_by');
+    }
+
+    public function updatedUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'updated_by');
+    }
+
+    public function createdSites(): HasMany
+    {
+        return $this->hasMany(Site::class, 'created_by');
+    }
+
+    public function updatedSites(): HasMany
+    {
+        return $this->hasMany(Site::class, 'updated_by');
+    }
+
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(UserToken::class);
+    }
+
+    public function createdTokens(): HasMany
+    {
+        return $this->hasMany(UserToken::class, 'created_by');
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(Session::class);
     }
 }

@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->enum('role', ['admin', 'editor']);
             $table->rememberToken();
-            $table->foreignUlid('created_by')->nullable()->constrained('users');
-            $table->foreignUlid('updated_by')->nullable()->constrained('users');
+            $table->ulid('created_by')->nullable();
+            $table->ulid('updated_by')->nullable();
+
             $table->timestamps();
         });
     }

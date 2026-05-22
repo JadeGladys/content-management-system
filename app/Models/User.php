@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -99,4 +100,27 @@ class User extends Authenticatable
     {
         return $this->hasMany(Session::class);
     }
+
+    public function siteAssignments(): HasMany
+    {
+        return $this->hasMany(SiteAssignment::class);
+    }
+
+    public function assignedSites(): BelongsToMany
+    {
+        return $this->belongsToMany(Site::class, 'site_assignments')
+            ->withPivot(['id', 'assigned_by', 'updated_by'])
+            ->withTimestamps();
+    }
+
+    public function assignedSiteAssignments(): HasMany
+    {
+        return $this->hasMany(SiteAssignment::class, 'assigned_by');
+    }
+
+    public function updatedSiteAssignments(): HasMany
+    {
+        return $this->hasMany(SiteAssignment::class, 'updated_by');
+    }
+
 }

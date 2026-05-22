@@ -52,4 +52,9 @@ class Site extends Model
         return $this->hasMany(JobPost::class);
     }
 
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class);
+    }
+
 }

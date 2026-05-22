@@ -11,23 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_posts', function (Blueprint $table) {
+        Schema::create('articles', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('site_id')->constrained('sites')->cascadeOnDelete();
             $table->string('title');
             $table->string('slug');
             $table->string('category');
-            $table->string('location');
-            $table->string('department');
-            $table->text('about');
-            $table->text('description');
-            $table->text('requirements');
-            $table->dateTime('deadline')->nullable();
-            $table->enum('status', ['draft', 'published', 'closed'])->default('draft');
+            $table->json('tags')->nullable();
+            $table->text('overview')->nullable();
+            $table->longText('content');
+            $table->foreignUlid('featured_image_id')->nullable()->constrained('media')->nullOnDelete();
+            $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
             $table->foreignUlid('created_by')->constrained('users');
             $table->foreignUlid('updated_by')->nullable()->constrained('users');
             $table->timestamp('published_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
             $table->timestamps();
 
             $table->unique(['site_id', 'slug']);
@@ -39,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_posts');
+        Schema::dropIfExists('articles');
     }
 };

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class JobPost extends Model
+class Article extends Model
 {
     use HasUlids;
 
@@ -19,31 +19,32 @@ class JobPost extends Model
         'title',
         'slug',
         'category',
-        'location',
-        'department',
-        'about',
-        'description',
-        'requirements',
-        'deadline',
+        'tags',
+        'overview',
+        'content',
+        'featured_image_id',
         'status',
         'created_by',
         'updated_by',
         'published_at',
-        'closed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'deadline' => 'datetime',
+            'tags' => 'array',
             'published_at' => 'datetime',
-            'closed_at' => 'datetime',
         ];
     }
 
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    public function featuredImage(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'featured_image_id');
     }
 
     public function createdBy(): BelongsTo

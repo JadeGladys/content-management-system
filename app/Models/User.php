@@ -133,6 +133,16 @@ class User extends Authenticatable
         return $this->hasMany(JobPost::class, 'updated_by');
     }
 
+    public function createdArticles(): HasMany
+    {
+        return $this->hasMany(Article::class, 'created_by');
+    }
+
+    public function updatedArticles(): HasMany
+    {
+        return $this->hasMany(Article::class, 'updated_by');
+    }
+
     public function uploadedMedia(): HasMany
     {
         return $this->hasMany(Media::class, 'uploaded_by');

@@ -25,6 +25,10 @@ class UserToken extends Model
         'created_by',
     ];
 
+    protected $hidden = [
+        'token_hash',
+    ];
+
     protected function casts(): array
     {
         return [

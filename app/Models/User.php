@@ -30,6 +30,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'must_set_password',
         'created_by',
         'updated_by',
     ];
@@ -53,6 +54,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'must_set_password' => 'boolean',
         ];
     }
 

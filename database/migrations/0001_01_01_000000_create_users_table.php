@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->enum('role', ['admin', 'editor']);
             $table->rememberToken();
+            $table->boolean('must_set_password')->default(false);
             $table->ulid('created_by')->nullable();
             $table->ulid('updated_by')->nullable();
 

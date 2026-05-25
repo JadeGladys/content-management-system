@@ -13,6 +13,17 @@ services:
       - postgres
       - mailpit
 
+  node:
+    image: node:22
+    container_name: cms_node
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
   postgres:
     image: postgres:16
     container_name: cms_postgres
@@ -34,3 +45,4 @@ services:
 
 volumes:
   postgres_data:
+  node_modules:

@@ -36,7 +36,7 @@ class AuthenticatedSessionController extends Controller
                 ->onlyInput('email');
         }
 
-        return redirect()->intended('/');
+        return redirect()->intended(route('users.create'));
     }
 
     public function destroy(SessionAuthenticationService $authenticationService): RedirectResponse

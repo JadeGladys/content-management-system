@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password')->nullable();
+            $table->boolean('must_set_password')->default(false);
             $table->enum('role', ['admin', 'editor']);
             $table->rememberToken();
             $table->ulid('created_by')->nullable();

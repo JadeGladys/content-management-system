@@ -21,7 +21,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->ulid('created_by')->nullable();
             $table->ulid('updated_by')->nullable();
-
             $table->timestamps();
         });
     }

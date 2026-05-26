@@ -7,20 +7,24 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class PasswordSetupMail extends Mailable
+class PasswordActionMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
         public User $user,
-        public string $setupUrl,
+        public string $actionUrl,
+        public string $subjectLine,
+        public string $introText,
+        public string $actionText,
+        public string $expiryText,
     ) {
     }
 
     public function build(): self
     {
         return $this
-            ->subject('Set up your CMS password')
-            ->view('emails.password-setup');
+            ->subject($this->subjectLine)
+            ->view('emails.password-email-action');
     }
 }

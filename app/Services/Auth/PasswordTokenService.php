@@ -8,24 +8,29 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
-class PasswordSetupTokenService
+class PasswordTokenService
 {
-    public function createForUser(User $user, ?User $actor = null): array
-    {
+    public function createForUser(
+        User $user,
+        string $type,
+        int $expiresInHours,
+        ?User $actor = null
+    ): array{
         //invalidate old unused tokens so the new token remain valid and log it
         $invalidatedCount = UserToken::query()
             ->where('user_id', $user->id)
-            ->where('type', 'password_setup')
+            ->where('type', $type)
             ->whereNull('used_at')
             ->update([
                 'used_at' => now(),
             ]);
 
         if ($invalidatedCount > 0) {
-            Log::info('Existing password setup tokens invalidated.', [
+            Log::info('Existing password tokens invalidated.', [
                 'actor_id' => $actor?->id,
                 'target_id' => $user->id,
                 'user_id' => $user->id,
+                'token_type' => $type,
                 'status' => 'success',
             ]);
         }
@@ -34,17 +39,18 @@ class PasswordSetupTokenService
 
         $userToken = UserToken::create([
             'user_id' => $user->id,
-            'type' => 'password_setup',
+            'type' => $type,
             'token_hash' => hash('sha256', $plainToken),
-            'expires_at' => Carbon::now()->addHours(24),
+            'expires_at' => Carbon::now()->addHours($expiresInHours),
             'used_at' => null,
             'created_by' => $actor?->id,
         ]);
 
-        Log::info('Password setup token created.', [
+        Log::info('Password token created.', [
             'actor_id' => $actor?->id,
             'target_id' => $user->id,
             'user_id' => $user->id,
+            'token_type' => $type,
             'status' => 'success',
         ]);
 

@@ -4,7 +4,7 @@
             IC
         </div>
         <div>
-            <p class="text-sm font-semibold text-slate-900">ISCO CMS</p>
+            <p class="text-sm font-semibold text-slate-900">CMS</p>
             <p class="text-xs text-slate-500">Admin workspace</p>
         </div>
     </div>

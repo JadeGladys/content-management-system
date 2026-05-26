@@ -23,7 +23,7 @@
                         Seamless Login for Exclusive Access
                     </h1>
                     <p class="mt-6 max-w-xl text-base leading-relaxed text-slate-600">
-                        Sign in to manage jobs, articles, media, and site access across the ISCO content management system.
+                        Sign in to manage jobs, articles, media, and site access across the content management system.
                     </p>
                 </div>
 
@@ -120,7 +120,7 @@
                         </label>
 
                         <a
-                            href="#"
+                            href="{{ route('password.request') }}"
                             class="ml-auto rounded text-sm font-medium text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
                             Forgot password?

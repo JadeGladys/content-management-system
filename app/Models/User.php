@@ -31,7 +31,6 @@ class User extends Authenticatable
         'password',
         'must_set_password',
         'role',
-        'must_set_password',
         'created_by',
         'updated_by',
     ];

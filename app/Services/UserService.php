@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Services\Auth\PasswordSetupTokenService;
-use App\Mail\PasswordSetupMail;
+use App\Services\Auth\PasswordTokenService;
+use App\Mail\PasswordActionMail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -12,7 +12,7 @@ use Throwable;
 class UserService
 {
     public function __construct(
-        protected PasswordSetupTokenService $passwordSetupTokenService
+        protected PasswordTokenService $passwordTokenService
     ) {
     }
 
@@ -35,7 +35,12 @@ class UserService
             'status' => 'success',
         ]);
 
-        $tokenData = $this->passwordSetupTokenService->createForUser($user, $actor);
+        $tokenData = $this->passwordTokenService->createForUser(
+            $user,
+            'password_setup',
+            24,
+            $actor,
+        );
 
         $setupUrl = route('password.setup', [
             'token' => $tokenData['plain_token'],
@@ -44,7 +49,14 @@ class UserService
 
         try {
             Mail::to($user->email)->send(
-                new PasswordSetupMail($user, $setupUrl)
+                new PasswordActionMail(
+                    $user,
+                    $setupUrl,
+                    'Set up your CMS password',
+                    'Your CMS account has been created.',
+                    'Set up password',
+                    'This link will expire in 24 hours.',
+                )
             );
 
             Log::info('Password setup email sent.', [

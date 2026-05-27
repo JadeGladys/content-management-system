@@ -10,7 +10,7 @@
     <div class="flex min-h-screen">
         <x-sidebar />
 
-        <main class="flex-1 p-8 lg:ml-[264px]">
+        <main class="min-w-0 flex-1 overflow-x-hidden p-8 lg:ml-[264px]">
             @yield('content')
         </main>
     </div>

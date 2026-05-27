@@ -28,7 +28,7 @@
                 </a>
 
                 <a
-                    href="{{ route('sites.create') }}"
+                    href="{{ route('sites.index') }}"
                     class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Sites</p>

@@ -4,11 +4,29 @@ namespace App\Services\Site;
 
 use App\Models\Site;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SiteService
 {
+    public function getPaginatedSites(?string $search = null): LengthAwarePaginator
+    {
+        return Site::query()
+            ->withCount('assignedUsers')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery
+                        ->where('name', 'ilike', "%{$search}%")
+                        ->orWhere('slug', 'ilike', "%{$search}%")
+                        ->orWhere('domain', 'ilike', "%{$search}%");
+                });
+            })
+            ->latest('updated_at')
+            ->paginate(8)
+            ->withQueryString();
+    }
+    
     public function createSite(array $data, User $actor): Site
     {
         $baseSlug = Str::slug($data['name']);

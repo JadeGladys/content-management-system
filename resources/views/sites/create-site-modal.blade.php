@@ -3,11 +3,11 @@
     title="Create Site"
     description="Add a new site with its main identity details."
 >
-    @if ($errors->any())
+    @if ($errors->createSite->any())
         <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <p class="font-semibold">Please fix the following:</p>
             <ul class="mt-2 list-disc pl-5">
-                @foreach ($errors->all() as $error)
+                @foreach ($errors->createSite->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>

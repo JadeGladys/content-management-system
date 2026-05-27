@@ -96,7 +96,7 @@
                                 <col class="w-[12%]">
                                 <col class="w-[10%]">
                                 <col class="w-[12%]">
-                                <col class="w-[12%]">
+                                <col class="w-[15%]">
                             </colgroup>
                             <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
                             <tr>
@@ -111,17 +111,17 @@
                                     </label>
                                 </th>
 
-                                <th scope="col" class="px-2 py-5 whitespace-nowrap">Sites</th>
-                                <th scope="col" class="px-2 py-5 leading-tight">
+                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Sites</th>
+                                <th scope="col" class="px-7 py-5 leading-tight">
                                     <span class="block">Assigned users</span>
                                 </th>
-                                <th scope="col" class="px-2 py-5 whitespace-nowrap">Slug</th>
-                                <th scope="col" class="px-2 py-5 whitespace-nowrap">Domain</th>
-                                <th scope="col" class="px-2 py-5 whitespace-nowrap">Status</th>
-                                <th scope="col" class="px-2 py-5 leading-tight">
+                                <th scope="col" class="px-10 py-5 whitespace-nowrap">Slug</th>
+                                <th scope="col" class="px-10 py-5 whitespace-nowrap">Domain</th>
+                                <th scope="col" class="px-7 py-5 whitespace-nowrap">Status</th>
+                                <th scope="col" class="px-5 py-5 leading-tight">
                                     <span class="block">Updated at</span>
                                 </th>
-                                <th scope="col" class="px-2 py-5 whitespace-nowrap">Actions</th>
+                                <th scope="col" class="px-10 py-5 whitespace-nowrap">Actions</th>
                             </tr>
                             </thead>
 
@@ -153,7 +153,7 @@
                                         </div>
                                     </td>
 
-                                    <td class="px-2 py-5 text-slate-500 text-left whitespace-nowrap">
+                                    <td class="px-2 py-5 text-slate-500 text-center whitespace-nowrap">
                                         @if ($site->assigned_users_count > 0)
                                             <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-slate-100 px-3 font-semibold text-blue-700">
                                                 {{ $site->assigned_users_count }}
@@ -195,6 +195,13 @@
                                         <div class="flex items-center gap-1.5">
                                         <button
                                             type="button"
+                                            data-edit-site
+                                            data-site-id="{{ $site->id }}"
+                                            data-update-url="{{ route('sites.update', $site) }}"
+                                            data-name="{{ $site->name }}"
+                                            data-domain="{{ $site->domain }}"
+                                            data-status="{{ $site->status }}"
+                                            data-assigned-user-ids='@json($site->assignedUsers->pluck("id")->values())'
                                             class="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="size-4" aria-hidden="true">
@@ -203,15 +210,27 @@
                                             Edit
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            class="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="size-4" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                            </svg>
-                                            Delete
-                                        </button>
+                                            <button
+                                                type="button"
+                                                data-toggle-site-status
+                                                data-status-url="{{ route('sites.status', $site) }}"
+                                                data-name="{{ $site->name }}"
+                                                data-current-status="{{ $site->status }}"
+                                                class="inline-flex items-center gap-1 rounded-xl border px-2.5 py-2 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 {{ $site->status === 'active' ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500' : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 focus-visible:ring-emerald-500' }}"
+                                            >
+                                                @if ($site->status === 'active')
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="size-4" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3" />
+                                                    </svg>
+                                                    Deactivate
+                                                @else
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="size-4" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m6 2.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                    </svg>
+                                                    Activate
+                                                @endif
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -280,6 +299,8 @@
     </div>
 
     @include('sites.create-site-modal')
+    @include('sites.edit-site-modal')
+    @include('sites.status-site-modal')
 @endsection
 
 @push('scripts')
@@ -289,6 +310,28 @@
         const createSiteModalCloseButtons = document.querySelectorAll('[data-modal-close="createSiteModal"]');
         const masterCheckbox = document.getElementById('master-checkbox');
         const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        const editSiteModalOverlay = document.getElementById('editSiteModal');
+        const statusSiteModalOverlay = document.getElementById('statusSiteModal');
+        const editSiteForm = document.getElementById('editSiteForm');
+        const editSiteIdInput = document.getElementById('edit_site_id');
+        const statusSiteForm = document.getElementById('statusSiteForm');
+        const editNameInput = document.getElementById('edit_name');
+        const editDomainInput = document.getElementById('edit_domain');
+        const editStatusInput = document.getElementById('edit_status');
+        const statusSiteName = document.getElementById('statusSiteName');
+        const statusSiteAction = document.getElementById('statusSiteAction');
+        const statusSiteDescription = document.getElementById('statusSiteDescription');
+        const statusSiteSubmitLabel = document.getElementById('statusSiteSubmitLabel');
+
+        const editorSearchInput = document.getElementById('editorSearch');
+        const editorDropdown = document.getElementById('editorDropdown');
+        const editorOptions = document.querySelectorAll('.editor-option');
+        const editorDropdownEmpty = document.getElementById('editorDropdownEmpty');
+        const selectedEditorsChips = document.getElementById('selectedEditorsChips');
+        const assignedEditorsHiddenInputs = document.getElementById('assignedEditorsHiddenInputs');
+        const editorSelectField = document.getElementById('editorSelectField');
+
+        let selectedEditors = [];
 
         const showCreateSiteModal = () => {
             createSiteModalOverlay?.classList.remove('hidden');
@@ -298,6 +341,92 @@
         const hideCreateSiteModal = () => {
             createSiteModalOverlay?.classList.add('hidden');
             createSiteModalOverlay?.classList.remove('flex');
+        };
+
+        const showModal = (element) => {
+            element?.classList.remove('hidden');
+            element?.classList.add('flex');
+        };
+
+        const hideModal = (element) => {
+            element?.classList.add('hidden');
+            element?.classList.remove('flex');
+        };
+
+        const renderSelectedEditors = () => {
+            if (!selectedEditorsChips || !assignedEditorsHiddenInputs) {
+                return;
+            }
+
+            selectedEditorsChips.innerHTML = '';
+            assignedEditorsHiddenInputs.innerHTML = '';
+
+            selectedEditors.forEach((editor) => {
+                const chip = document.createElement('span');
+                chip.className = 'inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700';
+
+                const label = document.createElement('span');
+                label.textContent = editor.name;
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'text-blue-500 transition hover:text-blue-700';
+                removeButton.innerHTML = '&times;';
+                removeButton.addEventListener('click', () => {
+                    selectedEditors = selectedEditors.filter((selectedEditor) => selectedEditor.id !== editor.id);
+                    renderSelectedEditors();
+                    filterEditorOptions();
+
+                    if (editorSearchInput) {
+                        editorSearchInput.focus();
+                    }
+                });
+
+                chip.appendChild(label);
+                chip.appendChild(removeButton);
+                selectedEditorsChips.appendChild(chip);
+
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'assigned_user_ids[]';
+                hiddenInput.value = editor.id;
+
+                assignedEditorsHiddenInputs.appendChild(hiddenInput);
+            });
+        };
+
+        const filterEditorOptions = () => {
+            if (!editorSearchInput || !editorDropdownEmpty) {
+                return;
+            }
+
+            const term = editorSearchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            editorOptions.forEach((option) => {
+                const editorId = option.dataset.editorId;
+                const searchableText = option.dataset.editorSearch ?? '';
+                const alreadySelected = selectedEditors.some((editor) => editor.id === editorId);
+                const matches = term.length === 0 || searchableText.includes(term);
+                const shouldShow = matches && !alreadySelected;
+
+                option.classList.toggle('hidden', !shouldShow);
+
+                if (shouldShow) {
+                    visibleCount++;
+                }
+            });
+
+            editorDropdownEmpty.classList.toggle('hidden', visibleCount !== 0);
+        };
+
+        const openEditorDropdown = () => {
+            editorDropdown?.classList.remove('hidden');
+            filterEditorOptions();
+        };
+
+        const closeEditorDropdown = () => {
+            editorDropdown?.classList.add('hidden');
         };
 
         openCreateSiteModalButton?.addEventListener('click', showCreateSiteModal);
@@ -318,8 +447,171 @@
             });
         });
 
-        @if ($errors->any())
+        document.querySelectorAll('[data-edit-site]').forEach((button) => {
+            button.addEventListener('click', () => {
+                editSiteForm.action = button.dataset.updateUrl;
+                editSiteIdInput.value = button.dataset.siteId ?? '';
+                editNameInput.value = button.dataset.name ?? '';
+                editDomainInput.value = button.dataset.domain ?? '';
+                editStatusInput.value = button.dataset.status ?? 'active';
+
+                let assignedUserIds = [];
+
+                try {
+                    assignedUserIds = JSON.parse(button.dataset.assignedUserIds ?? '[]');
+                } catch (error) {
+                    assignedUserIds = [];
+                }
+
+                selectedEditors = assignedUserIds
+                    .map((id) => {
+                        const option = Array.from(editorOptions).find((editorOption) => editorOption.dataset.editorId === id);
+
+                        if (!option) {
+                            return null;
+                        }
+
+                        return {
+                            id: option.dataset.editorId,
+                            name: option.dataset.editorName,
+                            email: option.dataset.editorEmail,
+                        };
+                    })
+                    .filter(Boolean);
+
+                renderSelectedEditors();
+
+                if (editorSearchInput) {
+                    editorSearchInput.value = '';
+                }
+
+                closeEditorDropdown();
+                showModal(editSiteModalOverlay);
+            });
+        });
+
+        document.querySelectorAll('[data-toggle-site-status]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const currentStatus = button.dataset.currentStatus ?? 'inactive';
+                const nextAction = currentStatus === 'active' ? 'Deactivate' : 'Activate';
+
+                statusSiteForm.action = button.dataset.statusUrl;
+                statusSiteName.textContent = button.dataset.name ?? '';
+                statusSiteAction.textContent = nextAction;
+                statusSiteSubmitLabel.textContent = nextAction;
+                statusSiteDescription.textContent = currentStatus === 'active'
+                    ? 'This will prevent this site from accessing the CMS until it is activated again.'
+                    : 'This will allow this site to access the CMS again.';
+
+                showModal(statusSiteModalOverlay);
+            });
+        });
+
+        document.querySelectorAll('[data-modal-close="editSiteModal"]').forEach((button) => {
+            button.addEventListener('click', () => {
+                closeEditorDropdown();
+                hideModal(editSiteModalOverlay);
+            });
+        });
+
+        document.querySelectorAll('[data-modal-close="statusSiteModal"]').forEach((button) => {
+            button.addEventListener('click', () => hideModal(statusSiteModalOverlay));
+        });
+
+        editSiteModalOverlay?.addEventListener('click', (event) => {
+            if (event.target === editSiteModalOverlay) {
+                closeEditorDropdown();
+                hideModal(editSiteModalOverlay);
+            }
+        });
+
+        statusSiteModalOverlay?.addEventListener('click', (event) => {
+            if (event.target === statusSiteModalOverlay) {
+                hideModal(statusSiteModalOverlay);
+            }
+        });
+
+        editorOptions.forEach((option) => {
+            option.addEventListener('click', () => {
+                const editor = {
+                    id: option.dataset.editorId,
+                    name: option.dataset.editorName,
+                    email: option.dataset.editorEmail,
+                };
+
+                if (!selectedEditors.some((selectedEditor) => selectedEditor.id === editor.id)) {
+                    selectedEditors.push(editor);
+                }
+
+                renderSelectedEditors();
+
+                if (editorSearchInput) {
+                    editorSearchInput.value = '';
+                    editorSearchInput.focus();
+                }
+
+                filterEditorOptions();
+            });
+        });
+
+        editorSearchInput?.addEventListener('focus', () => {
+            openEditorDropdown();
+        });
+
+        editorSearchInput?.addEventListener('input', () => {
+            openEditorDropdown();
+        });
+
+        document.addEventListener('click', (event) => {
+            if (
+                editorDropdown &&
+                editorSelectField &&
+                !editorSelectField.contains(event.target) &&
+                !editorDropdown.contains(event.target)
+            ) {
+                closeEditorDropdown();
+            }
+        });
+
+        @if ($errors->createSite->any())
             showCreateSiteModal();
+        @endif
+
+        @if ($errors->updateSite->any())
+            editSiteForm.action = @json(old('site_id') ? route('sites.update', old('site_id')) : '');
+            editSiteIdInput.value = @json(old('site_id', ''));
+            editNameInput.value = @json(old('name', ''));
+            editDomainInput.value = @json(old('domain', ''));
+            editStatusInput.value = @json(old('status', 'active'));
+
+            {
+                const previousAssignedUserIds = @json(collect(old('assigned_user_ids', []))->values());
+
+                selectedEditors = previousAssignedUserIds
+                    .map((id) => {
+                        const option = Array.from(editorOptions).find((editorOption) => editorOption.dataset.editorId === id);
+
+                        if (!option) {
+                            return null;
+                        }
+
+                        return {
+                            id: option.dataset.editorId,
+                            name: option.dataset.editorName,
+                            email: option.dataset.editorEmail,
+                        };
+                    })
+                    .filter(Boolean);
+            }
+
+            renderSelectedEditors();
+
+            if (editorSearchInput) {
+                editorSearchInput.value = '';
+            }
+
+            closeEditorDropdown();
+            showModal(editSiteModalOverlay);
         @endif
     </script>
 @endpush

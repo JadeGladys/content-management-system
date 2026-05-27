@@ -13,4 +13,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::post('/admin/sites', [SiteController::class, 'store'])
         ->name('sites.store');
+
+    Route::patch('/admin/sites/{site}', [SiteController::class, 'update'])
+        ->name('sites.update');
+
+    Route::patch('/admin/sites/{site}/status', [SiteController::class, 'toggleStatus'])
+        ->name('sites.status');
 });

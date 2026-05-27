@@ -26,7 +26,7 @@
         
         @if ($user?->role === 'admin')
             <a
-                href="{{ route('users.create') }}"
+                href="{{ route('users.index') }}"
                 class="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
                 Users

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Services\Auth\PasswordTokenService;
 use App\Mail\PasswordActionMail;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -14,6 +15,23 @@ class UserService
     public function __construct(
         protected PasswordTokenService $passwordTokenService
     ) {
+    }
+
+    public function getPaginatedUsers(?string $search = null): LengthAwarePaginator
+    {
+        return User::query()
+            ->withCount('assignedSites')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery
+                        ->where('name', 'ilike', "%{$search}%")
+                        ->orWhere('email', 'ilike', "%{$search}%")
+                        ->orWhere('role', 'ilike', "%{$search}%");
+                });
+            })
+            ->latest('updated_at')
+            ->paginate(8)
+            ->withQueryString();
     }
 
     public function createUser(array $data, User $actor): array

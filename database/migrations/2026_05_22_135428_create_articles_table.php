@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('site_id')->constrained('sites')->cascadeOnDelete();
             $table->string('title');
             $table->string('slug');
             $table->string('category');
@@ -27,7 +26,7 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['site_id', 'slug']);
+            $table->unique('slug');
         });
     }
 

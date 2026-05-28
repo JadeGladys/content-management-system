@@ -12,7 +12,6 @@ class CareerService
     {
         return Career::query()
             ->with([
-                'site:id,name',
                 'createdBy:id,name',
             ])
             ->when($actor->role === 'editor', function ($query) use ($actor) {

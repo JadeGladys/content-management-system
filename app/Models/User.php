@@ -77,16 +77,6 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'updated_by');
     }
 
-    public function createdSites(): HasMany
-    {
-        return $this->hasMany(Site::class, 'created_by');
-    }
-
-    public function updatedSites(): HasMany
-    {
-        return $this->hasMany(Site::class, 'updated_by');
-    }
-
     public function tokens(): HasMany
     {
         return $this->hasMany(UserToken::class);

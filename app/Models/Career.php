@@ -15,7 +15,6 @@ class Career extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'site_id',
         'title',
         'slug',
         'category',
@@ -39,11 +38,6 @@ class Career extends Model
             'published_at' => 'datetime',
             'closed_at' => 'datetime',
         ];
-    }
-
-    public function site(): BelongsTo
-    {
-        return $this->belongsTo(Site::class);
     }
 
     public function createdBy(): BelongsTo

@@ -15,7 +15,6 @@ class Article extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'site_id',
         'title',
         'slug',
         'category',
@@ -35,11 +34,6 @@ class Article extends Model
             'tags' => 'array',
             'published_at' => 'datetime',
         ];
-    }
-
-    public function site(): BelongsTo
-    {
-        return $this->belongsTo(Site::class);
     }
 
     public function featuredImage(): BelongsTo

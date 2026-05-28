@@ -15,7 +15,7 @@
                         <p class="text-sm font-semibold uppercase tracking-[0.22em] text-blue-600">Careers Directory</p>
                         <h1 class="mt-3 text-3xl leading-tight font-semibold tracking-tight text-slate-900 md:text-[3.15rem]">Manage every CMS career from one view</h1>
                         <p class="mt-3 max-w-[56rem] text-sm leading-6 text-slate-600 md:text-base">
-                            Review career details, monitor publishing status, and track ownership across all sites from one listing page.
+                            Review career details, monitor publishing status, and track ownership from one listing page.
                         </p>
                     </div>
 
@@ -91,13 +91,12 @@
                     <table class="min-w-[1180px] w-full table-fixed">
                         <colgroup>
                             <col class="w-[4%]">
-                            <col class="w-[18%]">
-                            <col class="w-[18%]">
+                            <col class="w-[24%]">
                             <col class="w-[14%]">
-                            <col class="w-[12%]">
-                            <col class="w-[12%]">
+                            <col class="w-[14%]">
+                            <col class="w-[14%]">
                             <col class="w-[10%]">
-                            <col class="w-[12%]">
+                            <col class="w-[16%]">
                         </colgroup>
 
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
@@ -113,7 +112,6 @@
                                     </label>
                                 </th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Career title</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Site</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Category</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Department</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Location</th>
@@ -144,12 +142,6 @@
                                                 {{ $listedCareer->title }}
                                             </span>
                                         </div>
-                                    </td>
-
-                                    <td class="px-4 py-5 text-slate-500">
-                                        <span class="block truncate whitespace-nowrap" title="{{ $listedCareer->site?->name }}">
-                                            {{ $listedCareer->site?->name ?? '—' }}
-                                        </span>
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500">
@@ -199,7 +191,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-6 py-16 text-center text-sm text-slate-500">
+                                    <td colspan="7" class="px-6 py-16 text-center text-sm text-slate-500">
                                         No careers found yet.
                                     </td>
                                 </tr>

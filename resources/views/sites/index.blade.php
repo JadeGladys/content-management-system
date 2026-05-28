@@ -187,7 +187,6 @@
                                     <td class="px-2 py-5 text-slate-500">
                                         <span class="block leading-6">
                                             {{ $site->updated_at->format('d M Y,') }}<br>
-                                            {{ $site->updated_at->format('g:i a') }}
                                         </span>
                                     </td>
 

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_posts', function (Blueprint $table) {
+        Schema::create('careers', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('site_id')->constrained('sites')->cascadeOnDelete();
             $table->string('title');
@@ -39,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_posts');
+        Schema::dropIfExists('careers');
     }
 };

@@ -93,7 +93,6 @@
                             <col class="w-[22%]">
                             <col class="w-[22%]">
                             <col class="w-[10%]">
-                            <col class="w-[12%]">
                             <col class="w-[14%]">
                             <col class="w-[16%]">
                         </colgroup>
@@ -112,9 +111,6 @@
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Users</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Email</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Role</th>
-                                <th scope="col" class="px-4 py-5 leading-tight">
-                                    <span class="block">Assigned sites</span>
-                                </th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Access status</th>
                                 <th scope="col" class="px-4 py-5 leading-tight">
                                     <span class="block">Updated at</span>
@@ -155,16 +151,6 @@
                                         <span class="inline-flex rounded-xl bg-slate-100 px-3 py-2 text-[12px] font-semibold tracking-wide text-slate-600">
                                             {{ ucfirst($listedUser->role) }}
                                         </span>
-                                    </td>
-
-                                    <td class="px-4 py-5 text-center text-slate-500 whitespace-nowrap">
-                                        @if ($listedUser->assigned_sites_count > 0)
-                                            <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-slate-100 px-3 font-semibold text-blue-700">
-                                                {{ $listedUser->assigned_sites_count }}
-                                            </span>
-                                        @else
-                                            <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-slate-100 px-3 font-semibold text-slate-400">—</span>
-                                        @endif
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500 whitespace-nowrap">

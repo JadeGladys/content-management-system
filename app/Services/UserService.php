@@ -20,7 +20,6 @@ class UserService
     public function getPaginatedUsers(?string $search = null): LengthAwarePaginator
     {
         return User::query()
-            ->withCount('assignedSites')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($innerQuery) use ($search) {
                     $innerQuery

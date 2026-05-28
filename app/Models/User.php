@@ -125,14 +125,14 @@ class User extends Authenticatable
         return $this->hasMany(SiteAssignment::class, 'updated_by');
     }
 
-    public function createdJobs(): HasMany
+    public function createdCareers(): HasMany
     {
-        return $this->hasMany(JobPost::class, 'created_by');
+        return $this->hasMany(Career::class, 'created_by');
     }
 
-    public function updatedJobs(): HasMany
+    public function updatedCareers(): HasMany
     {
-        return $this->hasMany(JobPost::class, 'updated_by');
+        return $this->hasMany(Career::class, 'updated_by');
     }
 
     public function createdArticles(): HasMany

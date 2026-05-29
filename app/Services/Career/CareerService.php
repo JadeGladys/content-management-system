@@ -27,7 +27,10 @@ class CareerService
                         ->orWhere('slug', 'ilike', "%{$search}%")
                         ->orWhere('category', 'ilike', "%{$search}%")
                         ->orWhere('department', 'ilike', "%{$search}%")
-                        ->orWhere('location', 'ilike', "%{$search}%");
+                        ->orWhere('location', 'ilike', "%{$search}%")
+                        ->orWhereHas('createdBy', function ($created_byQuery) use ($search) {
+                            $created_byQuery->where('name', 'ilike', "%{$search}%");
+                        });
                 });
             })
             ->latest('updated_at')
@@ -44,9 +47,13 @@ class CareerService
                 'category' => $data['category'],
                 'location' => $data['location'],
                 'department' => $data['department'],
-                'about' => $data['about'] ?? null,
-                'description' => $data['description'] ?? null,
-                'requirements' => $data['requirements'] ?? null,
+                'about' => json_decode($data['about'], true),
+                'description' => filled($data['description'] ?? null)
+                    ? json_decode($data['description'], true)
+                    : null,
+                'requirements' => filled($data['requirements'] ?? null)
+                    ? json_decode($data['requirements'], true)
+                    : null,
                 'deadline' => $data['deadline'] ?? null,
                 'status' => 'draft',
                 'created_by' => $actor->id,

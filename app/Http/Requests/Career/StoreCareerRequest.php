@@ -19,9 +19,9 @@ class StoreCareerRequest extends FormRequest
             'category' => ['required', 'string', Rule::in(config('careers.categories', []))],
             'location' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
-            'about' => ['required', 'string'],
-            'description' => ['nullable', 'string'],
-            'requirements' => ['nullable', 'string'],
+            'about' => ['required', 'json'],
+            'description' => ['nullable', 'json'],
+            'requirements' => ['nullable', 'json'],
             'deadline' => ['nullable', 'date'],
         ];
     }

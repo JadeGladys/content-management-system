@@ -1,16 +1,44 @@
 import { Editor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 
-export function mountArticleEditor() {
-    const editorElement = document.getElementById('article-content-editor')
-    const hiddenField = document.getElementById('content')
+function getEmptyDocument() {
+    return {
+        type: 'doc',
+        content: [
+            {
+                type: 'paragraph',
+            },
+        ],
+    }
+}
 
-    if (!editorElement || !hiddenField) {
-        return
+function parseEditorContent(value) {
+    if (!value) {
+        return getEmptyDocument()
+    }
+
+    try {
+        return JSON.parse(value)
+    } catch {
+        return getEmptyDocument()
+    }
+}
+
+function getNormalizedEditorValue(editor) {
+    if (editor.isEmpty) {
+        return ''
+    }
+
+    return JSON.stringify(editor.getJSON())
+}
+
+function createEditor({ element, hiddenField, toolbar }) {
+    if (!element || !hiddenField) {
+        return null
     }
 
     const editor = new Editor({
-        element: editorElement,
+        element,
         extensions: [
             StarterKit.configure({
                 heading: {
@@ -18,21 +46,14 @@ export function mountArticleEditor() {
                 },
             }),
         ],
-        content: hiddenField.value ? JSON.parse(hiddenField.value) : {
-            type: 'doc',
-            content: [
-                {
-                    type: 'paragraph',
-                },
-            ],
-        },
-        onUpdate: ({ editor }) => {
-            hiddenField.value = JSON.stringify(editor.getJSON())
+        content: parseEditorContent(hiddenField.value),
+        onUpdate: ({ editor: currentEditor }) => {
+            hiddenField.value = getNormalizedEditorValue(currentEditor)
         },
     })
 
     const bindCommand = (selector, callback) => {
-        document.querySelector(selector)?.addEventListener('click', callback)
+        toolbar?.querySelector(selector)?.addEventListener('click', callback)
     }
 
     bindCommand('[data-editor="h2"]', () => {
@@ -63,7 +84,36 @@ export function mountArticleEditor() {
         editor.chain().focus().toggleOrderedList().run()
     })
 
-    hiddenField.value = JSON.stringify(editor.getJSON())
+    hiddenField.value = getNormalizedEditorValue(editor)
 
     return editor
+}
+
+export function mountArticleEditor() {
+    const editorElement = document.getElementById('article-content-editor')
+    const hiddenField = document.getElementById('content')
+    const toolbar = document.getElementById('article-content-toolbar')
+
+    return createEditor({
+        element: editorElement,
+        hiddenField,
+        toolbar,
+    })
+}
+
+export function mountCareerEditors() {
+    const roots = document.querySelectorAll('[data-career-editor-root]')
+
+    roots.forEach((root) => {
+        const fieldName = root.dataset.careerEditorRoot
+        const editorElement = root.querySelector('[data-editor-surface]')
+        const toolbar = root.querySelector('[data-editor-toolbar]')
+        const hiddenField = document.getElementById(fieldName)
+
+        createEditor({
+            element: editorElement,
+            hiddenField,
+            toolbar,
+        })
+    })
 }

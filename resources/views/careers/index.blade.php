@@ -90,7 +90,8 @@
                     <table class="min-w-[1180px] w-full table-fixed">
                         <colgroup>
                             <col class="w-[4%]">
-                            <col class="w-[24%]">
+                            <col class="w-[18%]">
+                            <col class="w-[14%]">
                             <col class="w-[14%]">
                             <col class="w-[14%]">
                             <col class="w-[14%]">
@@ -114,6 +115,7 @@
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Category</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Department</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Location</th>
+                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Created By</th>
                                 <th scope="col" class="px-4 py-5 whitespace-nowrap">Status</th>
                                 <th scope="col" class="px-4 py-5 leading-tight">
                                     <span class="block">Updated at</span>
@@ -161,6 +163,12 @@
                                         </span>
                                     </td>
 
+                                    <td class="px-4 py-5 text-slate-500">
+                                        <span class="block truncate whitespace-nowrap" title="{{ $listedCareer->createdBy?->name ?? '—' }}">
+                                            {{ $listedCareer->createdBy?->name ?? '—' }}
+                                        </span>
+                                    </td>
+
                                     <td class="px-4 py-5 whitespace-nowrap text-slate-500">
                                         @php
                                             $statusClasses = match ($listedCareer->status) {
@@ -190,7 +198,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center text-sm text-slate-500">
+                                    <td colspan="8" class="px-6 py-8 text-center text-sm text-slate-500">
                                         No careers found yet.
                                     </td>
                                 </tr>

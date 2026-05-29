@@ -30,14 +30,14 @@ class CareerController extends Controller
     public function create(): View
     {
         return view('careers.create', [
-        'categories' => config('careers.categories', []),
-        'locationSuggestions' => Career::query()
-            ->whereNotNull('location')
-            ->select('location')
-            ->distinct()
-            ->orderBy('location')
-            ->pluck('location'),
-    ]);
+            'categories' => config('careers.categories', []),
+            'locationSuggestions' => Career::query()
+                ->whereNotNull('location')
+                ->select('location')
+                ->distinct()
+                ->orderBy('location')
+                ->pluck('location'),
+        ]);
     }
 
     public function store(StoreCareerRequest $request): RedirectResponse

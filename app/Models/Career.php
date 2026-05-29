@@ -34,6 +34,9 @@ class Career extends Model
     protected function casts(): array
     {
         return [
+            'about' => 'array',
+            'description' => 'array',
+            'requirements' => 'array',
             'deadline' => 'datetime',
             'published_at' => 'datetime',
             'closed_at' => 'datetime',

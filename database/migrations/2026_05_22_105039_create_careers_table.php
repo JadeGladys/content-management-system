@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('category');
             $table->string('location');
             $table->string('department');
-            $table->text('about');
-            $table->text('description');
-            $table->text('requirements');
+            $table->text('about')->nullable();
+            $table->text('description')->nullable();
+            $table->text('requirements')->nullable();
             $table->dateTime('deadline')->nullable();
             $table->enum('status', ['draft', 'published', 'closed'])->default('draft');
             $table->foreignUlid('created_by')->constrained('users');

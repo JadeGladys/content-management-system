@@ -26,13 +26,16 @@ class Article extends Model
         'author',
         'updated_by',
         'published_at',
+        'archived_at',
     ];
 
     protected function casts(): array
     {
         return [
             'tags' => 'array',
+            'content' => 'array',
             'published_at' => 'datetime',
+            'archived_at' => 'datetime',
         ];
     }
 

@@ -102,9 +102,9 @@ class User extends Authenticatable
         return $this->hasMany(Career::class, 'updated_by');
     }
 
-    public function createdArticles(): HasMany
+    public function authoredArticles(): HasMany
     {
-        return $this->hasMany(Article::class, 'created_by');
+        return $this->hasMany(Article::class, 'author');
     }
 
     public function updatedArticles(): HasMany

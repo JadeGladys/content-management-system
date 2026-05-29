@@ -20,8 +20,8 @@ class StoreCareerRequest extends FormRequest
             'location' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
             'about' => ['required', 'string'],
-            'description' => ['required', 'string'],
-            'requirements' => ['required', 'string'],
+            'description' => ['nullable', 'string'],
+            'requirements' => ['nullable', 'string'],
             'deadline' => ['nullable', 'date'],
         ];
     }

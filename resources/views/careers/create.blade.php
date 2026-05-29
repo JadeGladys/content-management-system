@@ -141,7 +141,7 @@
                         <div class="grid gap-5">
                             <div>
                                 <label for="about" class="mb-2 block text-sm font-medium text-slate-700">
-                                    About <span class="text-rose-600">*</span>
+                                    About
                                 </label>
                                 <textarea
                                     id="about"
@@ -156,7 +156,7 @@
 
                             <div>
                                 <label for="description" class="mb-2 block text-sm font-medium text-slate-700">
-                                    Description <span class="text-rose-600">*</span>
+                                    Description
                                 </label>
                                 <textarea
                                     id="description"
@@ -171,7 +171,7 @@
 
                             <div>
                                 <label for="requirements" class="mb-2 block text-sm font-medium text-slate-700">
-                                    Requirements <span class="text-rose-600">*</span>
+                                    Requirements
                                 </label>
                                 <textarea
                                     id="requirements"

@@ -18,12 +18,13 @@ return new class extends Migration
             $table->string('category');
             $table->json('tags')->nullable();
             $table->text('overview')->nullable();
-            $table->longText('content');
+            $table->json('content')->nullable();
             $table->foreignUlid('featured_image_id')->nullable()->constrained('media')->nullOnDelete();
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
             $table->foreignUlid('author')->constrained('users');
             $table->foreignUlid('updated_by')->nullable()->constrained('users');
             $table->timestamp('published_at')->nullable();
+            $table->timestamp('archived_at')->nullable();
             $table->timestamps();
 
             $table->unique('slug');

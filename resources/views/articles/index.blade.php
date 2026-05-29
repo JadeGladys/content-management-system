@@ -69,9 +69,8 @@
                         Export
                     </button>
 
-                    <button
-                        type="button"
-                        id="openCreatearticleModal"
+                    <a
+                        href="{{ route('articles.create') }}"
                         class="flex items-center gap-2 rounded-2xl border border-blue-600 bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 512 512" aria-hidden="true">
@@ -81,7 +80,7 @@
                             </g>
                         </svg>
                         Create Article Entry
-                    </button>
+                    </a>
 
                 </div>
             </div>

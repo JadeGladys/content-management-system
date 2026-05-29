@@ -23,7 +23,7 @@ class Article extends Model
         'content',
         'featured_image_id',
         'status',
-        'created_by',
+        'author',
         'updated_by',
         'published_at',
     ];
@@ -41,9 +41,9 @@ class Article extends Model
         return $this->belongsTo(Media::class, 'featured_image_id');
     }
 
-    public function createdBy(): BelongsTo
+    public function authorUser(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'author');
     }
 
     public function updatedBy(): BelongsTo

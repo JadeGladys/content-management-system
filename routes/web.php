@@ -11,3 +11,5 @@ require __DIR__.'/auth.php';
 require __DIR__.'/user.php';
 
 require __DIR__.'/career.php';
+
+require __DIR__.'/article.php';

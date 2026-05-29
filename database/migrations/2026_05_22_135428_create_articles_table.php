@@ -21,7 +21,7 @@ return new class extends Migration
             $table->longText('content');
             $table->foreignUlid('featured_image_id')->nullable()->constrained('media')->nullOnDelete();
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
-            $table->foreignUlid('created_by')->constrained('users');
+            $table->foreignUlid('author')->constrained('users');
             $table->foreignUlid('updated_by')->nullable()->constrained('users');
             $table->timestamp('published_at')->nullable();
             $table->timestamps();

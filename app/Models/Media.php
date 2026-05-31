@@ -17,12 +17,18 @@ class Media extends Model
 
     protected $fillable = [
         'file_name',
+        'file_hash',
         'file_path',
         'file_type',
         'file_size',
         'uploaded_by',
         'updated_by',
     ];
+
+    public function getPublicUrlAttribute(): string
+    {
+        return asset('storage/' . $this->file_path);
+    }
 
     public function uploadedBy(): BelongsTo
     {

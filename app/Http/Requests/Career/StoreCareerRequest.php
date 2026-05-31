@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests\Career;
 
+use App\Models\Career;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Illuminate\Support\Str;
 
 class StoreCareerRequest extends FormRequest
 {
@@ -12,17 +15,39 @@ class StoreCareerRequest extends FormRequest
         return auth()->check();
     }
 
+    protected function prepareForValidation(): void
+    {
+        $title = trim((string) $this->input('title', ''));
+
+        $this->merge([
+            'title' => $title,
+            'department' => trim((string) $this->input('department', '')),
+            'slug' => Str::slug($title) ?: 'career',
+        ]);
+    }
+
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255', Rule::unique('careers', 'title')],
             'category' => ['required', 'string', Rule::in(config('careers.categories', []))],
-            'location' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
-            'about' => ['required', 'json'],
-            'description' => ['nullable', 'json'],
-            'requirements' => ['nullable', 'json'],
-            'deadline' => ['nullable', 'date'],
+            'slug' => ['required', 'string', 'max:255'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if (
+                filled($this->input('slug')) &&
+                Career::query()->where('slug', $this->input('slug'))->exists()
+            ) {
+                $validator->errors()->add(
+                    'title',
+                    'This title creates a slug that already exists. Choose a different title.'
+                );
+            }
+        });
     }
 }

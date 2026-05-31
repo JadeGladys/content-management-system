@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug');
             $table->string('category');
-            $table->string('location');
+            $table->string('location')->nullable();
             $table->string('department');
             $table->json('about')->nullable();
             $table->json('description')->nullable();
@@ -29,6 +29,7 @@ return new class extends Migration
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();
 
+            $table->unique('title');
             $table->unique('slug');
         });
     }

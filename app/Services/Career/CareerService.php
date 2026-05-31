@@ -6,7 +6,6 @@ use App\Models\Career;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Throwable;
 
 class CareerService
@@ -17,6 +16,17 @@ class CareerService
             ->with([
                 'createdBy:id,name',
             ])
+            ->when($actor->role === 'admin', function ($query) use ($actor) {
+                $query->where(function ($visibilityQuery) use ($actor) {
+                    $visibilityQuery
+                        ->whereIn('status', ['published', 'closed'])
+                        ->orWhere(function ($draftQuery) use ($actor) {
+                            $draftQuery
+                                ->where('status', 'draft')
+                                ->where('created_by', $actor->id);
+                        });
+                });
+            })
             ->when($actor->role === 'editor', function ($query) use ($actor) {
                 $query->where('created_by', $actor->id);
             })
@@ -28,8 +38,8 @@ class CareerService
                         ->orWhere('category', 'ilike', "%{$search}%")
                         ->orWhere('department', 'ilike', "%{$search}%")
                         ->orWhere('location', 'ilike', "%{$search}%")
-                        ->orWhereHas('createdBy', function ($created_byQuery) use ($search) {
-                            $created_byQuery->where('name', 'ilike', "%{$search}%");
+                        ->orWhereHas('createdBy', function ($createdByQuery) use ($search) {
+                            $createdByQuery->where('name', 'ilike', "%{$search}%");
                         });
                 });
             })
@@ -43,18 +53,14 @@ class CareerService
         try {
             $career = Career::create([
                 'title' => $data['title'],
-                'slug' => $this->generateUniqueSlug($data['title']),
+                'slug' => $data['slug'],
                 'category' => $data['category'],
-                'location' => $data['location'],
+                'location' => null,
                 'department' => $data['department'],
-                'about' => json_decode($data['about'], true),
-                'description' => filled($data['description'] ?? null)
-                    ? json_decode($data['description'], true)
-                    : null,
-                'requirements' => filled($data['requirements'] ?? null)
-                    ? json_decode($data['requirements'], true)
-                    : null,
-                'deadline' => $data['deadline'] ?? null,
+                'about' => null,
+                'description' => null,
+                'requirements' => null,
+                'deadline' => null,
                 'status' => 'draft',
                 'created_by' => $actor->id,
                 'updated_by' => $actor->id,
@@ -82,17 +88,54 @@ class CareerService
         }
     }
 
-    protected function generateUniqueSlug(string $title): string
+    public function updateCareer(array $data, Career $career, User $actor): Career
     {
-        $baseSlug = Str::slug($title);
-        $slug = $baseSlug;
-        $counter = 2;
+        try {
+            $isPublishing = ($data['action'] ?? 'save') === 'publish';
 
-        while (Career::query()->where('slug', $slug)->exists()) {
-            $slug = "{$baseSlug}-{$counter}";
-            $counter++;
+            $career->update([
+                'title' => $data['title'],
+                'slug' => $data['slug'],
+                'category' => $data['category'],
+                'location' => $data['location'] ?? null,
+                'department' => $data['department'],
+                'about' => filled($data['about'] ?? null)
+                    ? json_decode($data['about'], true)
+                    : null,
+                'description' => filled($data['description'] ?? null)
+                    ? json_decode($data['description'], true)
+                    : null,
+                'requirements' => filled($data['requirements'] ?? null)
+                    ? json_decode($data['requirements'], true)
+                    : null,
+                'deadline' => $data['deadline'] ?? null,
+                'status' => $isPublishing
+                    ? 'published'
+                    : $career->status,
+                'updated_by' => $actor->id,
+                'published_at' => $isPublishing
+                    ? ($career->published_at ?? now())
+                    : $career->published_at,
+            ]);
+
+            Log::info('Career updated.', [
+                'actor_id' => $actor->id,
+                'career_id' => $career->id,
+                'title' => $career->title,
+                'status' => $isPublishing ? 'published' : 'saved',
+            ]);
+
+            return $career->fresh();
+        } catch (Throwable $exception) {
+            Log::error('Career update failed.', [
+                'actor_id' => $actor->id,
+                'career_id' => $career->id,
+                'title' => $data['title'] ?? null,
+                'status' => 'failed',
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
         }
-
-        return $slug;
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Services\Article;
 
 use App\Models\Article;
-use App\Models\Media;
+use App\Services\Media\MediaService;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -13,6 +13,10 @@ use Throwable;
 
 class ArticleService
 {
+    public function __construct(
+        protected MediaService $mediaService
+    ) {
+    }
     public function getPaginatedArticles(?string $search, User $actor): LengthAwarePaginator
     {
         return Article::query()
@@ -39,14 +43,16 @@ class ArticleService
             ->withQueryString();
     }
 
-    public function createArticle(array $data, User $actor, ?UploadedFile $featuredImageUpload = null): Article
+    public function createArticle(array $data, User $actor, ?UploadedFile $featuredImageUpload = null): array
     {
         try {
             $featuredImageId = $data['featured_image_id'] ?? null;
+            $reusedExistingFeaturedImage = false;
 
             if ($featuredImageUpload) {
-                $media = $this->storeFeaturedImage($featuredImageUpload, $actor);
+                $media = $this->mediaService->storeMediaUpload($actor, $featuredImageUpload);
                 $featuredImageId = $media->id;
+                $reusedExistingFeaturedImage = ! $media->wasRecentlyCreated;
             }
 
             $article = Article::create([
@@ -72,9 +78,13 @@ class ArticleService
                 'title' => $article->title,
                 'featured_image_id' => $featuredImageId,
                 'status' => 'success',
+                'featured_image_reused' => $reusedExistingFeaturedImage,
             ]);
 
-            return $article;
+            return [
+                'article' => $article,
+                'reused_existing_featured_image' => $reusedExistingFeaturedImage,
+            ];
         } catch (Throwable $exception) {
             Log::error('Article creation failed.', [
                 'actor_id' => $actor->id,
@@ -85,20 +95,6 @@ class ArticleService
 
             throw $exception;
         }
-    }
-
-    protected function storeFeaturedImage(UploadedFile $file, User $actor): Media
-    {
-        $path = $file->store('media/articles', 'public');
-
-        return Media::create([
-            'file_name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'file_type' => $file->getMimeType() ?? $file->getClientMimeType(),
-            'file_size' => $file->getSize(),
-            'uploaded_by' => $actor->id,
-            'updated_by' => $actor->id,
-        ]);
     }
 
     protected function normalizeTags(?string $tags): array

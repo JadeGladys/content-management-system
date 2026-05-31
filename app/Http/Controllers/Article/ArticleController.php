@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Article;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Article\StoreArticleRequest;
-use App\Models\Article;
 use App\Models\Media;
 use App\Services\Article\ArticleService;
 use Illuminate\Contracts\View\View;
@@ -34,22 +33,26 @@ class ArticleController extends Controller
             'categories' => config('articles.categories', []),
             'mediaLibrary' => Media::query()
                 ->latest()
-                ->get(['id', 'file_name', 'file_path', 'file_type']),
+                ->get(['id', 'file_name', 'file_path', 'file_type', 'file_size']),
         ]);
     }
 
     public function store(StoreArticleRequest $request): RedirectResponse
     {
         try {
-            $this->articleService->createArticle(
-                $request->validated(), 
-                $request->user(),
-                $request->file('featured_image_upload')
-            );
+            $result = $this->articleService->createArticle(
+            $request->validated(),
+            $request->user(),
+            $request->file('featured_image_upload')
+        );
 
-            return redirect()
-                ->route('articles.index')
-                ->with('success', 'Article created successfully.');
+        $successMessage = $result['reused_existing_featured_image']
+            ? 'Article created successfully. This image already exists in the media library, so the existing asset was reused.'
+            : 'Article created successfully.';
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', $successMessage);
         } catch (\Throwable $exception) {
             return redirect()
                 ->back()

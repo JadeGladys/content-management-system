@@ -328,63 +328,80 @@
 
 @push('scripts')
     <script>
-        const featuredImageUploadInput = document.getElementById('featured_image_upload');
-        const featuredImageIdInput = document.getElementById('featured_image_id');
-        const featuredImagePreviewCard = document.getElementById('featured-image-preview-card');
-        const featuredImagePreviewTag = document.getElementById('featured-image-preview-tag');
-        const featuredImagePreviewName = document.getElementById('featured-image-preview-name');
-        const featuredImageEmptyState = document.getElementById('featured-image-empty-state');
-        const uploadSelectionText = document.getElementById('upload-selection-text');
-        const clearFeaturedImageButton = document.getElementById('clearFeaturedImage');
+        (() => {
+            const featuredImageUploadInput = document.getElementById('featured_image_upload');
+            const featuredImageIdInput = document.getElementById('featured_image_id');
+            const featuredImagePreviewCard = document.getElementById('featured-image-preview-card');
+            const featuredImagePreviewTag = document.getElementById('featured-image-preview-tag');
+            const featuredImagePreviewName = document.getElementById('featured-image-preview-name');
+            const featuredImageEmptyState = document.getElementById('featured-image-empty-state');
+            const uploadSelectionText = document.getElementById('upload-selection-text');
+            const clearFeaturedImageButton = document.getElementById('clearFeaturedImage');
 
-        const showFeaturedImagePreview = (src, name) => {
-            featuredImagePreviewTag.src = src;
-            featuredImagePreviewName.textContent = name;
-            featuredImagePreviewCard.classList.remove('hidden');
-            featuredImageEmptyState.classList.add('hidden');
-        };
+            const showFeaturedImagePreview = (src, name) => {
+                featuredImagePreviewTag.src = src;
+                featuredImagePreviewName.textContent = name;
+                featuredImagePreviewCard.classList.remove('hidden');
+                featuredImageEmptyState.classList.add('hidden');
+            };
 
-        const resetFeaturedImagePreview = () => {
-            featuredImagePreviewTag.src = '';
-            featuredImagePreviewName.textContent = '';
-            featuredImagePreviewCard.classList.add('hidden');
-            featuredImageEmptyState.classList.remove('hidden');
-            uploadSelectionText.textContent = 'No file selected';
-
-            if (featuredImageIdInput) {
-                featuredImageIdInput.value = '';
-            }
-        };
-
-        featuredImageUploadInput?.addEventListener('change', (event) => {
-            const [file] = event.target.files ?? [];
-
-            if (!file) {
-                resetFeaturedImagePreview();
-                return;
-            }
-
-            uploadSelectionText.textContent = '1 file selected';
-
-            const reader = new FileReader();
-
-            reader.onload = (loadEvent) => {
-                showFeaturedImagePreview(loadEvent.target?.result ?? '', file.name);
+            const resetFeaturedImagePreview = () => {
+                featuredImagePreviewTag.src = '';
+                featuredImagePreviewName.textContent = '';
+                featuredImagePreviewCard.classList.add('hidden');
+                featuredImageEmptyState.classList.remove('hidden');
+                uploadSelectionText.textContent = 'No file selected';
 
                 if (featuredImageIdInput) {
                     featuredImageIdInput.value = '';
                 }
             };
 
-            reader.readAsDataURL(file);
-        });
+            featuredImageUploadInput?.addEventListener('change', (event) => {
+                const [file] = event.target.files ?? [];
 
-        clearFeaturedImageButton?.addEventListener('click', () => {
-            if (featuredImageUploadInput) {
-                featuredImageUploadInput.value = '';
-            }
+                if (!file) {
+                    resetFeaturedImagePreview();
+                    return;
+                }
 
-            resetFeaturedImagePreview();
-        });
+                uploadSelectionText.textContent = '1 file selected';
+
+                const reader = new FileReader();
+
+                reader.onload = (loadEvent) => {
+                    showFeaturedImagePreview(loadEvent.target?.result ?? '', file.name);
+
+                    if (featuredImageIdInput) {
+                        featuredImageIdInput.value = '';
+                    }
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            clearFeaturedImageButton?.addEventListener('click', () => {
+                if (featuredImageUploadInput) {
+                    featuredImageUploadInput.value = '';
+                }
+
+                resetFeaturedImagePreview();
+            });
+
+            document.addEventListener('article:featured-image-selected', (event) => {
+                const { mediaId, mediaName, mediaUrl } = event.detail;
+
+                if (featuredImageIdInput) {
+                    featuredImageIdInput.value = mediaId;
+                }
+
+                if (featuredImageUploadInput) {
+                    featuredImageUploadInput.value = '';
+                }
+
+                uploadSelectionText.textContent = 'No file selected';
+                showFeaturedImagePreview(mediaUrl, mediaName);
+            });
+        })();
     </script>
 @endpush

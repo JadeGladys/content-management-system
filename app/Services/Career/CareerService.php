@@ -3,9 +3,11 @@
 namespace App\Services\Career;
 
 use App\Models\Career;
+use App\Models\CareerCategory;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class CareerService
@@ -14,6 +16,7 @@ class CareerService
     {
         return Career::query()
             ->with([
+                'category:id,name,slug',
                 'createdBy:id,name',
             ])
             ->when($actor->role === 'admin', function ($query) use ($actor) {
@@ -35,7 +38,9 @@ class CareerService
                     $innerQuery
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
-                        ->orWhere('category', 'ilike', "%{$search}%")
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'ilike', "%{$search}%");
+                        })
                         ->orWhere('department', 'ilike', "%{$search}%")
                         ->orWhere('location', 'ilike', "%{$search}%")
                         ->orWhereHas('createdBy', function ($createdByQuery) use ($search) {
@@ -54,7 +59,7 @@ class CareerService
             $career = Career::create([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
-                'category' => $data['category'],
+                'career_category_id' => $this->resolveCategoryId($data['category'], $actor),
                 'location' => null,
                 'department' => $data['department'],
                 'about' => null,
@@ -96,7 +101,7 @@ class CareerService
             $career->update([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
-                'category' => $data['category'],
+                'career_category_id' => $this->resolveCategoryId($data['category'], $actor),
                 'location' => $data['location'] ?? null,
                 'department' => $data['department'],
                 'about' => filled($data['about'] ?? null)
@@ -137,5 +142,21 @@ class CareerService
 
             throw $exception;
         }
+    }
+
+    protected function resolveCategoryId(string $categoryName, User $actor): string
+    {
+        $normalizedCategoryName = trim($categoryName);
+        $slug = Str::slug($normalizedCategoryName) ?: 'career-category';
+
+        $category = CareerCategory::query()->firstOrCreate(
+            ['slug' => $slug],
+            [
+                'name' => $normalizedCategoryName,
+                'created_by' => $actor->id,
+            ]
+        );
+
+        return $category->id;
     }
 }

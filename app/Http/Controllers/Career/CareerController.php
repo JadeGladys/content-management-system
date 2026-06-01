@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Career\StoreCareerRequest;
 use App\Http\Requests\Career\UpdateCareerRequest;
 use App\Models\Career;
+use App\Models\CareerCategory;
 use App\Services\Career\CareerService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +26,9 @@ class CareerController extends Controller
         return view('careers.index', [
             'careers' => $this->careerService->getPaginatedCareers($search, $request->user()),
             'search' => $search,
-            'categories' => config('careers.categories', []),
+            'categories' => CareerCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
         ]);
     }
 
@@ -54,13 +57,15 @@ class CareerController extends Controller
         }
 
         return view('careers.update', [
-            'career' => $career,
+            'career' => $career->load('category'),
             'pageTitle' => 'Edit Career',
             'pageHeading' => 'Edit career',
             'pageDescription' => 'Update the job details, adjust the slug and deadline, then save or publish when ready.',
             'formAction' => route('careers.update', $career),
             'formMethod' => 'PUT',
-            'categories' => config('careers.categories', []),
+            'categories' => CareerCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
             'locationSuggestions' => Career::query()
                 ->whereNotNull('location')
                 ->select('location')

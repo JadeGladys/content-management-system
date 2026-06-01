@@ -7,6 +7,7 @@ use App\Models\ArticleCategory;
 use App\Models\Tag;
 use App\Models\User;
 use App\Services\Media\MediaService;
+use App\Services\Article\ArticleSeoService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,8 @@ use Throwable;
 class ArticleService
 {
     public function __construct(
-        protected MediaService $mediaService
+        protected MediaService $mediaService,
+        protected ArticleSeoService $articleSeoService
     ) {
     }
 
@@ -47,6 +49,7 @@ class ArticleService
                     $innerQuery
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
+                        ->orWhere('meta_title', 'ilike', "%{$search}%")
                         ->orWhereHas('category', function ($categoryQuery) use ($search) {
                             $categoryQuery->where('name', 'ilike', "%{$search}%");
                         })
@@ -74,6 +77,16 @@ class ArticleService
                 'content' => null,
                 'featured_image_id' => null,
                 'status' => 'draft',
+
+                'meta_title' => null,
+                'meta_description' => null,
+                'meta_keywords' => null,
+                'canonical_url' => null,
+                'og_title' => null,
+                'og_description' => null,
+                'og_image_id' => null,
+                'no_index' => false,
+
                 'author' => $actor->id,
                 'updated_by' => $actor->id,
                 'published_at' => null,
@@ -108,13 +121,26 @@ class ArticleService
         try {
             $featuredImageId = $data['featured_image_id'] ?? $article->featured_image_id;
             $reusedExistingFeaturedImage = false;
-            $isPublishing = ($data['action'] ?? 'save') === 'publish';
+            $action = $data['action'] ?? 'save';
+            $isPublishing = $action === 'publish';
+            $isGeneratingSeo = $action === 'generate_seo';
 
             if ($featuredImageUpload) {
                 $media = $this->mediaService->storeMediaUpload($actor, $featuredImageUpload);
                 $featuredImageId = $media->id;
                 $reusedExistingFeaturedImage = ! $media->wasRecentlyCreated;
             }
+
+            $resolvedTagIds = $this->resolveTagIds(
+                $data['tag_ids'] ?? [],
+                $data['new_tags'] ?? [],
+                $actor
+            );
+
+            $resolvedTagNames = Tag::query()
+                ->whereIn('id', $resolvedTagIds)
+                ->pluck('name')
+                ->all();
 
             $article->update([
                 'title' => $data['title'],
@@ -132,13 +158,26 @@ class ArticleService
                 'archived_at' => $article->archived_at,
             ]);
 
-            $article->tags()->sync(
-                $this->resolveTagIds(
-                    $data['tag_ids'] ?? [],
-                    $data['new_tags'] ?? [],
-                    $actor
-                )
+            $article->load('category');
+
+            $seoResult = $this->articleSeoService->buildPayload(
+                $data,
+                $article,
+                $resolvedTagNames,
+                $featuredImageId,
+                $isGeneratingSeo
             );
+
+            $article->update($seoResult['payload']);
+
+            $this->articleSeoService->logGeneratedFields(
+                $article,
+                $actor,
+                $seoResult['generated_fields'],
+                $isGeneratingSeo ? 'generated' : 'updated'
+            );
+
+            $article->tags()->sync($resolvedTagIds);
 
             Log::info('Article updated.', [
                 'actor_id' => $actor->id,

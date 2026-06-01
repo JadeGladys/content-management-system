@@ -23,6 +23,14 @@ class Article extends Model
         'content',
         'featured_image_id',
         'status',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'canonical_url',
+        'og_title',
+        'og_description',
+        'og_image_id',
+        'no_index',
         'author',
         'updated_by',
         'published_at',
@@ -33,6 +41,7 @@ class Article extends Model
     {
         return [
             'content' => 'array',
+            'no_index' => 'boolean',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
         ];
@@ -51,6 +60,11 @@ class Article extends Model
     public function featuredImage(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'featured_image_id');
+    }
+
+    public function ogImage(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'og_image_id');
     }
 
     public function authorUser(): BelongsTo

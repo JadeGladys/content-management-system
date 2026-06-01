@@ -3,11 +3,14 @@
 namespace App\Services\Article;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
+use App\Models\Tag;
 use App\Models\User;
 use App\Services\Media\MediaService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ArticleService
@@ -22,6 +25,8 @@ class ArticleService
         return Article::query()
             ->with([
                 'authorUser:id,name',
+                'category:id,name,slug',
+                'tags:id,name,slug',
             ])
             ->when($actor->role === 'admin', function ($query) use ($actor) {
                 $query->where(function ($visibilityQuery) use ($actor) {
@@ -42,8 +47,12 @@ class ArticleService
                     $innerQuery
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
-                        ->orWhere('category', 'ilike', "%{$search}%")
-                        ->orWhere('tags', 'ilike', "%{$search}")
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('tags', function ($tagQuery) use ($search) {
+                            $tagQuery->where('name', 'ilike', "%{$search}%");
+                        })
                         ->orWhereHas('authorUser', function ($authorQuery) use ($search) {
                             $authorQuery->where('name', 'ilike', "%{$search}%");
                         });
@@ -60,8 +69,7 @@ class ArticleService
             $article = Article::create([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
-                'category' => $data['category'],
-                'tags' => [],
+                'article_category_id' => $this->resolveCategoryId($data['category'], $actor),
                 'overview' => null,
                 'content' => null,
                 'featured_image_id' => null,
@@ -111,8 +119,7 @@ class ArticleService
             $article->update([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
-                'category' => $data['category'],
-                'tags' => $this->normalizeTags($data['tags'] ?? null),
+                'article_category_id' => $this->resolveCategoryId($data['category'], $actor),
                 'overview' => $data['overview'] ?? null,
                 'content' => filled($data['content'] ?? null)
                     ? json_decode($data['content'], true)
@@ -125,6 +132,14 @@ class ArticleService
                 'archived_at' => $article->archived_at,
             ]);
 
+            $article->tags()->sync(
+                $this->resolveTagIds(
+                    $data['tag_ids'] ?? [],
+                    $data['new_tags'] ?? [],
+                    $actor
+                )
+            );
+
             Log::info('Article updated.', [
                 'actor_id' => $actor->id,
                 'article_id' => $article->id,
@@ -134,7 +149,7 @@ class ArticleService
             ]);
 
             return [
-                'article' => $article->fresh(),
+                'article' => $article->fresh(['category', 'tags']),
                 'reused_existing_featured_image' => $reusedExistingFeaturedImage,
             ];
         } catch (Throwable $exception) {
@@ -150,16 +165,53 @@ class ArticleService
         }
     }
 
-    protected function normalizeTags(?string $tags): array
+    protected function resolveTagIds(array $tagIds, array $newTags, User $actor): array
     {
-        if (blank($tags)) {
-            return [];
-        }
-
-        return collect(explode(',', $tags))
-            ->map(fn (string $tag) => trim($tag))
+        $existingTagIds = collect($tagIds)
             ->filter()
+            ->unique()
+            ->values();
+
+        $createdTagIds = collect($newTags)
+            ->map(fn ($tag) => trim((string) $tag))
+            ->filter()
+            ->unique(function ($tag) {
+                return Str::slug($tag);
+            })
+            ->map(function (string $tagName) use ($actor) {
+                $slug = Str::slug($tagName);
+
+                $tag = Tag::query()->firstOrCreate(
+                    ['slug' => $slug],
+                    [
+                        'name' => $tagName,
+                        'created_by' => $actor->id,
+                    ]
+                );
+
+                return $tag->id;
+            });
+
+        return $existingTagIds
+            ->merge($createdTagIds)
+            ->unique()
             ->values()
             ->all();
+    }
+
+    protected function resolveCategoryId(string $categoryName, User $actor): string
+    {
+        $normalizedCategoryName = trim($categoryName);
+        $slug = Str::slug($normalizedCategoryName) ?: 'article-category';
+
+        $category = ArticleCategory::query()->firstOrCreate(
+            ['slug' => $slug],
+            [
+                'name' => $normalizedCategoryName,
+                'created_by' => $actor->id,
+            ]
+        );
+
+        return $category->id;
     }
 }

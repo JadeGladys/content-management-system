@@ -11,12 +11,30 @@ return new class extends Migration
      */
     public function up(): void
     {
+        //creating table for article categories
+        Schema::create('article_categories', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        //creating table for article tags
+        Schema::create('tags', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        //creating table for articles
         Schema::create('articles', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('title');
             $table->string('slug');
-            $table->string('category');
-            $table->json('tags')->nullable();
+            $table->foreignUlid('article_category_id')->constrained('article_categories');
             $table->text('overview')->nullable();
             $table->json('content')->nullable();
             $table->foreignUlid('featured_image_id')->nullable()->constrained('media')->nullOnDelete();
@@ -30,6 +48,14 @@ return new class extends Migration
             $table->unique('title');
             $table->unique('slug');
         });
+
+        //creating table for article and tag many to many relationship
+        Schema::create('article_tag', function (Blueprint $table) {
+            $table->foreignUlid('article_id')->constrained('articles')->cascadeOnDelete();
+            $table->foreignUlid('tag_id')->constrained('tags')->cascadeOnDelete();
+
+            $table->primary(['article_id', 'tag_id']);
+        });
     }
 
     /**
@@ -37,6 +63,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('article_tag');
         Schema::dropIfExists('articles');
+        Schema::dropIfExists('tags');
+        Schema::dropIfExists('article_categories');
     }
 };

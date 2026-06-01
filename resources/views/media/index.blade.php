@@ -158,9 +158,14 @@
                                         <p class="mt-2 text-sm text-slate-500">
                                             {{ $formatFileSize($listedMedia->file_size) }}
                                         </p>
-                                        <p class="mt-1 text-sm text-slate-500">
-                                            {{ $listedMedia->uploadedBy?->name ?? '—' }}
-                                        </p>
+                                        <a
+                                            href="{{ $listedMedia->public_url }}"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white my-2 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                        >
+                                            Open
+                                        </a>
                                     </div>
                                 </article>
                             @endforeach

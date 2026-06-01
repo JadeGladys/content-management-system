@@ -17,7 +17,7 @@ class Career extends Model
     protected $fillable = [
         'title',
         'slug',
-        'category',
+        'career_category_id',
         'location',
         'department',
         'about',
@@ -46,6 +46,11 @@ class Career extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(CareerCategory::class, 'career_category_id');
     }
 
     public function updatedBy(): BelongsTo

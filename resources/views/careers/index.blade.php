@@ -143,8 +143,8 @@
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500">
-                                        <span class="block truncate" title="{{ $listedCareer->category }}">
-                                            {{ $listedCareer->category ?? '—' }}
+                                        <span class="block truncate" title="{{ $listedCareer->category?->name ?? '—' }}">
+                                            {{ $listedCareer->category?->name ?? '—' }}
                                         </span>
                                     </td>
 

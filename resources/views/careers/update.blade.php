@@ -38,7 +38,7 @@
                 <div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
                     <div class="space-y-8">
                         <section class="border-t border-slate-200 pt-8">
-                            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                            <div class="overflow-visible rounded-3xl border border-slate-200 bg-white shadow-sm">
                                 <div class="border-b border-slate-200 px-6 py-5">
                                     <h2 class="text-xl font-semibold tracking-tight text-slate-900">Career Information</h2>
                                     <p class="mt-1 text-sm leading-6 text-slate-500">
@@ -64,24 +64,16 @@
                                     </div>
 
                                     <div>
-                                        <label for="category" class="mb-2 block text-sm font-medium text-slate-700">
-                                            Category <span class="text-rose-600">*</span>
-                                        </label>
-                                        <select
-                                            id="category"
+                                        <x-category-picker
+                                            picker-id="career-update-category-picker"
                                             name="category"
-                                            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                                        >
-                                            <option value="">Select category</option>
-                                            @foreach ($categories as $category)
-                                                <option value="{{ $category }}" @selected(old('category', $career->category) === $category)>
-                                                    {{ $category }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('category')
-                                            <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
-                                        @enderror
+                                            label="Category"
+                                            :required="true"
+                                            :value="old('category', $career->category?->name)"
+                                            :options="$categories"
+                                            placeholder="Select category"
+                                            :panel-bleed="true"
+                                        />
                                     </div>
 
                                     <div>

@@ -16,11 +16,13 @@ class UpdateCareerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $title = trim((string) $this->input('title', ''));
+        $category = trim((string) $this->input('category', ''));
         $slugInput = $this->input('slug');
         $slugSource = blank($slugInput) ? $title : (string) $slugInput;
 
         $this->merge([
             'title' => $title,
+            'category' => $category,
             'department' => trim((string) $this->input('department', '')),
             'slug' => Str::slug($slugSource) ?: 'career',
         ]);
@@ -35,7 +37,7 @@ class UpdateCareerRequest extends FormRequest
         return [
             'action' => ['required', Rule::in(['save', 'publish'])],
             'title' => ['required', 'string', 'max:255', Rule::unique('careers', 'title')->ignore($careerId)],
-            'category' => ['required', 'string', Rule::in(config('careers.categories', []))],
+            'category' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('careers', 'slug')->ignore($careerId)],
             'location' => [Rule::requiredIf($publishing), 'nullable', 'string', 'max:255'],

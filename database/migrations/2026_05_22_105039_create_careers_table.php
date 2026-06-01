@@ -11,11 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('career_categories', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
         Schema::create('careers', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('title');
             $table->string('slug');
-            $table->string('category');
+            $table->foreignUlid('career_category_id')->constrained('career_categories');
             $table->string('location')->nullable();
             $table->string('department');
             $table->json('about')->nullable();
@@ -40,5 +48,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('careers');
+        Schema::dropIfExists('career_categories');
     }
 };

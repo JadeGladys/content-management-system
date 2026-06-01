@@ -18,9 +18,11 @@ class StoreCareerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $title = trim((string) $this->input('title', ''));
+        $category = trim((string) $this->input('category', ''));
 
         $this->merge([
             'title' => $title,
+            'category' => $category,
             'department' => trim((string) $this->input('department', '')),
             'slug' => Str::slug($title) ?: 'career',
         ]);
@@ -30,7 +32,7 @@ class StoreCareerRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255', Rule::unique('careers', 'title')],
-            'category' => ['required', 'string', Rule::in(config('careers.categories', []))],
+            'category' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255'],
         ];

@@ -16,12 +16,16 @@ class UpdateArticleRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $title = trim((string) $this->input('title', ''));
+        $category = trim((string) $this->input('category', ''));
         $slugInput = $this->input('slug');
         $slugSource = blank($slugInput) ? $title : (string) $slugInput;
 
         $this->merge([
             'title' => $title,
+            'category' => $category,
             'slug' => Str::slug($slugSource) ?: 'article',
+            'tag_ids' => $this->input('tag_ids', []),
+            'new_tags' => $this->input('new_tags', []),
         ]);
     }
 
@@ -33,9 +37,12 @@ class UpdateArticleRequest extends FormRequest
         return [
             'action' => ['required', Rule::in(['save', 'publish'])],
             'title' => ['required', 'string', 'max:255', Rule::unique('articles', 'title')->ignore($articleId)],
-            'category' => ['required', 'string', Rule::in(config('articles.categories', []))],
+            'category' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('articles', 'slug')->ignore($articleId)],
-            'tags' => ['nullable', 'string', 'max:255'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['nullable', 'exists:tags,id'],
+            'new_tags' => ['nullable', 'array'],
+            'new_tags.*' => ['nullable', 'string', 'max:50'],
             'overview' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'json'],
             'featured_image_id' => ['nullable', 'exists:media,id'],

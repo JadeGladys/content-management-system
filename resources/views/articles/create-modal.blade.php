@@ -31,24 +31,15 @@
             </div>
 
             <div>
-                <label for="draft_category" class="mb-2 block text-sm font-medium text-slate-700">
-                    Category <span class="text-rose-600">*</span>
-                </label>
-                <select
-                    id="draft_category"
+                <x-category-picker
+                    picker-id="article-create-category-picker"
                     name="category"
-                    class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                >
-                    <option value="">Select category</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category }}" @selected(old('category') === $category)>
-                            {{ $category }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('category')
-                    <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
-                @enderror
+                    label="Category"
+                    :required="true"
+                    :value="old('category')"
+                    :options="$categories"
+                    placeholder="Select category"
+                />
             </div>
 
             <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">

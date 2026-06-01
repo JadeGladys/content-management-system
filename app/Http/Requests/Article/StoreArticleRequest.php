@@ -18,9 +18,11 @@ class StoreArticleRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $title = trim((string) $this->input('title', ''));
+        $category = trim((string) $this->input('category', ''));
 
         $this->merge([
             'title' => $title,
+            'category' => $category,
             'slug' => Str::slug($title) ?: 'article',
         ]);
     }
@@ -29,7 +31,7 @@ class StoreArticleRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255', Rule::unique('articles', 'title')],
-            'category' => ['required', 'string', Rule::in(config('articles.categories', []))],
+            'category' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255'],
         ];
     }

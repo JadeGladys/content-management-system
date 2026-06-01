@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Article\StoreArticleRequest;
 use App\Http\Requests\Article\UpdateArticleRequest;
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\Media;
+use App\Models\Tag;
 use App\Services\Article\ArticleService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +28,9 @@ class ArticleController extends Controller
         return view('articles.index', [
             'articles' => $this->articleService->getPaginatedArticles($search, $request->user()),
             'search' => $search,
-            'categories' => config('articles.categories', []),
+            'categories' => ArticleCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
         ]);
     }
 
@@ -58,16 +62,21 @@ class ArticleController extends Controller
         }
 
         return view('articles.update', [
-            'article' => $article,
+            'article' => $article->load(['category', 'tags']),
             'pageTitle' => 'Edit Article',
             'pageHeading' => 'Edit article',
             'pageDescription' => 'Update the article details, adjust the slug and tags, then save or publish when ready.',
             'formAction' => route('articles.update', $article),
             'formMethod' => 'PUT',
-            'categories' => config('articles.categories', []),
+            'categories' => ArticleCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
             'mediaLibrary' => Media::query()
                 ->latest()
                 ->get(['id', 'file_name', 'file_path', 'file_type', 'file_size']),
+            'availableTags' => Tag::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
         ]);
     }
 

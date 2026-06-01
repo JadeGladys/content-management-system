@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Article extends Model
 {
@@ -17,8 +18,7 @@ class Article extends Model
     protected $fillable = [
         'title',
         'slug',
-        'category',
-        'tags',
+        'article_category_id',
         'overview',
         'content',
         'featured_image_id',
@@ -32,13 +32,22 @@ class Article extends Model
     protected function casts(): array
     {
         return [
-            'tags' => 'array',
             'content' => 'array',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
         ];
     }
 
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ArticleCategory::class, 'article_category_id');
+    }
+    
     public function featuredImage(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'featured_image_id');

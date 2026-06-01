@@ -151,13 +151,13 @@
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500">
-                                        <span class="block truncate whitespace-nowrap" title="{{ $listedArticle->category }}">
-                                            {{ $listedArticle->category ?? '—' }}
+                                        <span class="block truncate whitespace-nowrap" title="{{ $listedArticle->category?->name ?? '—' }}">
+                                            {{ $listedArticle->category?->name ?? '—' }}
                                         </span>
                                     </td>
 
                                     @php
-                                        $tagsText = filled($listedArticle->tags) ? implode(', ', $listedArticle->tags) : '—';
+                                        $tagsText = $listedArticle->tags->pluck('name')->implode(', ') ?: '—';
                                     @endphp
 
                                     <td class="px-4 py-5 text-slate-500">

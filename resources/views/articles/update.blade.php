@@ -33,10 +33,10 @@
                 @csrf
                 @method($formMethod)
 
-                <div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
+                <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
                     <div class="space-y-8">
                         <section class="border-t border-slate-200 pt-8">
-                            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                            <div class="overflow-visible rounded-3xl border border-slate-200 bg-white shadow-sm">
                                 <div class="border-b border-slate-200 px-6 py-5">
                                     <h2 class="text-xl font-semibold tracking-tight text-slate-900">Cover photo</h2>
                                     <p class="mt-1 text-sm leading-6 text-slate-500">
@@ -129,12 +129,9 @@
                         </section>
 
                         <section class="border-t border-slate-200 pt-8">
-                            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                            <div class="overflow-visible rounded-3xl border border-slate-200 bg-white shadow-sm">
                                 <div class="border-b border-slate-200 px-6 py-5">
                                     <h2 class="text-xl font-semibold tracking-tight text-slate-900">Article Information</h2>
-                                    <p class="mt-1 text-sm leading-6 text-slate-500">
-                                        Update the core details and refine the article content before publishing.
-                                    </p>
                                 </div>
 
                                 <div class="grid gap-5 p-6 md:grid-cols-2">
@@ -155,24 +152,16 @@
                                     </div>
 
                                     <div class="md:col-span-2">
-                                        <label for="category" class="mb-2 block text-sm font-medium text-slate-700">
-                                            Category <span class="text-rose-600">*</span>
-                                        </label>
-                                        <select
-                                            id="category"
+                                        <x-category-picker
+                                            picker-id="article-update-category-picker"
                                             name="category"
-                                            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                                        >
-                                            <option value="">Select category</option>
-                                            @foreach ($categories as $category)
-                                                <option value="{{ $category }}" @selected(old('category', $article->category) === $category)>
-                                                    {{ $category }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('category')
-                                            <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
-                                        @enderror
+                                            label="Category"
+                                            :required="true"
+                                            :value="old('category', $article->category?->name)"
+                                            :options="$categories"
+                                            placeholder="Select category"
+                                            :panel-bleed="true"
+                                        />
                                     </div>
 
                                     <div class="md:col-span-2">
@@ -197,9 +186,7 @@
                             <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                                 <div class="border-b border-slate-200 px-6 py-5">
                                     <h2 class="text-xl font-semibold tracking-tight text-slate-900">Article Content</h2>
-                                    <p class="mt-1 text-sm leading-6 text-slate-500">
-                                        Write and revise the article body using the editor below.
-                                    </p>
+
                                 </div>
 
                                 <div class="p-6">
@@ -215,13 +202,10 @@
                         </section>
                     </div>
 
-                    <aside class="space-y-6 border-t border-slate-200 pt-8 xl:border-t-0 xl:pt-0">
-                        <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                    <aside class="space-y-6 border-t border-slate-200 pt-8 lg:self-start lg:border-t-0 lg:pt-8">
+                        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-6">
                             <div class="border-b border-slate-200 px-6 py-5">
                                 <h2 class="text-lg font-semibold tracking-tight text-slate-900">Publishing Details</h2>
-                                <p class="mt-1 text-sm leading-6 text-slate-500">
-                                    Control the stable URL slug and tags from here.
-                                </p>
                             </div>
 
                             <div class="space-y-5 p-6">
@@ -234,27 +218,113 @@
                                         value="{{ old('slug', $article->slug) }}"
                                         class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                     >
-                                    <p class="mt-2 text-xs leading-5 text-slate-500">
-                                        This is generated once from the title and kept stable unless you edit or clear it manually.
-                                    </p>
                                     @error('slug')
                                         <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
+                                @php
+                                    $selectedTagIds = collect(old('tag_ids', $article->tags->pluck('id')->all()))
+                                        ->filter()
+                                        ->map(fn ($id) => (string) $id)
+                                        ->values()
+                                        ->all();
+
+                                    $selectedNewTags = collect(old('new_tags', []))
+                                        ->map(fn ($tag) => trim((string) $tag))
+                                        ->filter()
+                                        ->values()
+                                        ->all();
+
+                                    $availableTagOptions = $availableTags
+                                        ->map(fn ($tag) => [
+                                            'id' => (string) $tag->id,
+                                            'name' => $tag->name,
+                                            'slug' => $tag->slug,
+                                        ])
+                                        ->values()
+                                        ->all();
+                                @endphp
+
                                 <div>
-                                    <label for="tags" class="mb-2 block text-sm font-medium text-slate-700">Tags</label>
-                                    <input
-                                        type="text"
-                                        id="tags"
-                                        name="tags"
-                                        value="{{ old('tags', filled($article->tags) ? implode(', ', $article->tags) : '') }}"
-                                        class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                    <label class="mb-2 block text-sm font-medium text-slate-700">Tags</label>
+
+                                    <div
+                                        id="article-tag-picker"
+                                        class="relative rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-3"
+                                        data-available-tags='@json($availableTagOptions)'
+                                        data-selected-tag-ids='@json($selectedTagIds)'
+                                        data-selected-new-tags='@json($selectedNewTags)'
                                     >
-                                    @error('tags')
+                                        <div id="article-tag-id-inputs"></div>
+                                        <div id="article-new-tag-inputs"></div>
+
+                                        <div class="relative">
+                                            <button
+                                                type="button"
+                                                id="article-tags-trigger"
+                                                aria-expanded="false"
+                                                class="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-left shadow-sm transition hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                            >
+                                                <span id="article-tags-summary" class="block truncate text-sm font-semibold text-slate-900">
+                                                    Tag picker
+                                                </span>
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0 text-slate-400 transition" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+
+                                            <div
+                                                id="article-tags-panel"
+                                                class="absolute left-0 right-0 top-[calc(100%+0.75rem)] z-30 hidden overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_28px_55px_-24px_rgba(15,23,42,0.35)] xl:right-[-1.5rem]"
+                                            >
+                                                <div class="border-b border-slate-200 p-4">
+                                                    <div class="relative">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.472 9.765l2.63 2.63a.75.75 0 1 0 1.06-1.06l-2.629-2.63A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0a4 4 0 0 1-8 0Z" clip-rule="evenodd" />
+                                                        </svg>
+
+                                                        <input
+                                                            type="text"
+                                                            id="article-tags-search"
+                                                            autocomplete="off"
+                                                            placeholder="Search tags or add a new one"
+                                                            class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-11 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                        >
+                                                    </div>
+                                                </div>
+
+                                                <div
+                                                    id="article-tags-options"
+                                                    class="max-h-72 space-y-1 overflow-y-auto px-3 py-1"
+                                                ></div>
+                                            </div>
+                                        </div>
+
+                                    @error('tag_ids')
                                         <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
                                     @enderror
+
+                                    @error('tag_ids.*')
+                                        <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                    @enderror
+
+                                    @error('new_tags')
+                                        <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                    @enderror
+
+                                    @error('new_tags.*')
+                                        <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                    @enderror
+
+                                    <div
+                                        id="article-selected-tags"
+                                        class="mt-4 space-y-3"
+                                        aria-live="polite"
+                                    ></div>
                                 </div>
+
                             </div>
                         </div>
                     </aside>
@@ -304,6 +374,15 @@
             const featuredImageEmptyState = document.getElementById('featured-image-empty-state');
             const uploadSelectionText = document.getElementById('upload-selection-text');
             const clearFeaturedImageButton = document.getElementById('clearFeaturedImage');
+            const articleTagPicker = document.getElementById('article-tag-picker');
+            const articleTagsTrigger = document.getElementById('article-tags-trigger');
+            const articleTagsPanel = document.getElementById('article-tags-panel');
+            const articleTagsSearch = document.getElementById('article-tags-search');
+            const articleTagsOptions = document.getElementById('article-tags-options');
+            const articleTagsSummary = document.getElementById('article-tags-summary');
+            const articleSelectedTags = document.getElementById('article-selected-tags');
+            const articleTagIdInputs = document.getElementById('article-tag-id-inputs');
+            const articleNewTagInputs = document.getElementById('article-new-tag-inputs');
 
             const showFeaturedImagePreview = (src, name) => {
                 featuredImagePreviewTag.src = src;
@@ -369,6 +448,219 @@
                 uploadSelectionText.textContent = 'No file selected';
                 showFeaturedImagePreview(mediaUrl, mediaName);
             });
+
+            if (
+                !articleTagPicker ||
+                !articleTagsTrigger ||
+                !articleTagsPanel ||
+                !articleTagsSearch ||
+                !articleTagsOptions ||
+                !articleTagsSummary ||
+                !articleSelectedTags ||
+                !articleTagIdInputs ||
+                !articleNewTagInputs
+            ) {
+                    return;
+            }
+
+            const availableTags = JSON.parse(articleTagPicker.dataset.availableTags ?? '[]');
+            const initialSelectedTagIds = JSON.parse(articleTagPicker.dataset.selectedTagIds ?? '[]');
+            const initialSelectedNewTags = JSON.parse(articleTagPicker.dataset.selectedNewTags ?? '[]');
+            const selectedTagIds = new Set(initialSelectedTagIds);
+            let selectedNewTags = [...new Set(initialSelectedNewTags.map((tag) => tag.trim()).filter(Boolean))];
+
+            const normalizeTag = (value) => value.trim();
+            const slugify = (value) => normalizeTag(value)
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+
+            const syncHiddenInputs = () => {
+                articleTagIdInputs.innerHTML = '';
+                articleNewTagInputs.innerHTML = '';
+
+                Array.from(selectedTagIds).forEach((tagId) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'tag_ids[]';
+                    input.value = tagId;
+                    articleTagIdInputs.appendChild(input);
+                });
+
+                selectedNewTags.forEach((tag) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'new_tags[]';
+                    input.value = tag;
+                    articleNewTagInputs.appendChild(input);
+                });
+            };
+
+            const updateSummary = () => {
+                articleTagsSummary.textContent = 'Tag picker';
+            };
+
+            const removeSelectedTag = (type, value) => {
+                if (type === 'existing') {
+                    selectedTagIds.delete(value);
+                } else {
+                    selectedNewTags = selectedNewTags.filter((tag) => tag !== value);
+                }
+
+                renderTagPicker();
+            };
+
+            const renderSelectedTags = () => {
+                articleSelectedTags.innerHTML = '';
+
+                const selectedExistingTags = availableTags.filter((tag) => selectedTagIds.has(tag.id));
+                const selectedTagItems = [
+                    ...selectedExistingTags.map((tag) => ({ type: 'existing', value: tag.id, label: tag.name })),
+                    ...selectedNewTags.map((tag) => ({ type: 'new', value: tag, label: tag })),
+                ];
+
+                if (selectedTagItems.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500';
+                    emptyState.textContent = 'No tags selected yet.';
+                    articleSelectedTags.appendChild(emptyState);
+                    return;
+                }
+
+                selectedTagItems.forEach((tag) => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-1 shadow-sm';
+
+                    const textWrap = document.createElement('div');
+                    textWrap.className = 'min-w-0';
+
+                    const name = document.createElement('p');
+                    name.className = 'truncate text-sm font-medium text-slate-900';
+                    name.textContent = tag.label;
+
+                    textWrap.appendChild(name);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'inline-flex size-7 items-center justify-center rounded-full border border-slate-200 text-base font-medium leading-none text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600';
+                    removeButton.setAttribute('aria-label', `Remove ${tag.label}`);
+                    removeButton.textContent = '×';
+                    removeButton.addEventListener('click', () => {
+                        removeSelectedTag(tag.type, tag.value);
+                    });
+
+                    item.appendChild(textWrap);
+                    item.appendChild(removeButton);
+                    articleSelectedTags.appendChild(item);
+                });
+            };
+
+            const renderOptions = () => {
+                const query = articleTagsSearch.value.trim().toLowerCase();
+                const filteredTags = availableTags.filter((tag) => tag.name.toLowerCase().includes(query));
+
+                articleTagsOptions.innerHTML = '';
+
+                filteredTags.forEach((tag) => {
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = `flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm transition ${
+                        selectedTagIds.has(tag.id)
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                    }`;
+
+                    const name = document.createElement('span');
+                    name.className = 'truncate font-medium';
+                    name.textContent = tag.name;
+
+                    option.appendChild(name);
+
+                    option.addEventListener('click', () => {
+                        if (selectedTagIds.has(tag.id)) {
+                            selectedTagIds.delete(tag.id);
+                        } else {
+                            selectedTagIds.add(tag.id);
+                            selectedNewTags = selectedNewTags.filter((newTag) => slugify(newTag) !== tag.slug);
+                        }
+
+                        renderTagPicker();
+                    });
+
+                    articleTagsOptions.appendChild(option);
+                });
+
+                const normalizedQuery = normalizeTag(articleTagsSearch.value);
+                const querySlug = slugify(normalizedQuery);
+
+                const exactExistingMatch = availableTags.some((tag) => tag.slug === querySlug);
+                const exactNewMatch = selectedNewTags.some((tag) => slugify(tag) === querySlug);
+
+                if (normalizedQuery && querySlug && !exactExistingMatch && !exactNewMatch) {
+                    const createOption = document.createElement('button');
+                    createOption.type = 'button';
+                    createOption.className = 'mt-2 flex w-full items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50/80 px-4 py-3 text-left text-sm text-blue-700 transition hover:border-blue-300 hover:bg-blue-100';
+
+                    const createText = document.createElement('span');
+                    createText.className = 'truncate font-medium';
+                    createText.textContent = `Add "${normalizedQuery}"`;
+
+                    createOption.appendChild(createText);
+
+                    createOption.addEventListener('click', () => {
+                        selectedNewTags = [...selectedNewTags, normalizedQuery];
+                        articleTagsSearch.value = '';
+                        renderTagPicker();
+                    });
+
+                    articleTagsOptions.appendChild(createOption);
+                }
+
+                if (articleTagsOptions.children.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-sm text-slate-500';
+                    emptyState.textContent = 'No matching tags found.';
+                    articleTagsOptions.appendChild(emptyState);
+                }
+            };
+
+            const renderTagPicker = () => {
+                syncHiddenInputs();
+                updateSummary();
+                renderOptions();
+                renderSelectedTags();
+            };
+
+            const openTagPicker = () => {
+                articleTagsPanel.classList.remove('hidden');
+                articleTagsTrigger.setAttribute('aria-expanded', 'true');
+                articleTagsSearch.focus();
+            };
+
+            const closeTagPicker = () => {
+                articleTagsPanel.classList.add('hidden');
+                articleTagsTrigger.setAttribute('aria-expanded', 'false');
+            };
+
+            articleTagsTrigger.addEventListener('click', () => {
+                if (articleTagsPanel.classList.contains('hidden')) {
+                    openTagPicker();
+                    return;
+                }
+
+                closeTagPicker();
+            });
+
+            articleTagsSearch.addEventListener('input', renderOptions);
+
+            document.addEventListener('click', (event) => {
+                if (!articleTagPicker.contains(event.target)) {
+                    closeTagPicker();
+                }
+            });
+
+            renderTagPicker();
+
         })();
     </script>
 @endpush

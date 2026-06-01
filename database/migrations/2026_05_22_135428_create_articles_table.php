@@ -27,6 +27,7 @@ return new class extends Migration
             $table->timestamp('archived_at')->nullable();
             $table->timestamps();
 
+            $table->unique('title');
             $table->unique('slug');
         });
     }

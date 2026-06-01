@@ -63,9 +63,8 @@ class ArticleController extends Controller
 
         return view('articles.update', [
             'article' => $article->load(['category', 'tags']),
-            'pageTitle' => 'Edit Article',
-            'pageHeading' => 'Edit article',
-            'pageDescription' => 'Update the article details, adjust the slug and tags, then save or publish when ready.',
+            'pageTitle' => $article->title,
+            'pageHeading' => $article->title,
             'formAction' => route('articles.update', $article),
             'formMethod' => 'PUT',
             'categories' => ArticleCategory::query()
@@ -96,12 +95,25 @@ class ArticleController extends Controller
                 $request->file('featured_image_upload')
             );
 
-            $successMessage = $request->input('action') === 'publish'
+            $action = $request->input('action');
+
+            $successMessage = $action === 'publish'
                 ? 'Article updated and published successfully.'
-                : 'Article updated successfully.';
+                : ($action === 'generate_seo'
+                    ? 'SEO fields generated successfully.'
+                    : 'Article updated successfully.');
 
             if ($result['reused_existing_featured_image']) {
                 $successMessage .= ' This image already exists in the media library, so the existing asset was reused.';
+            }
+
+            if ($action === 'generate_seo') {
+                return redirect()
+                    ->route('articles.edit', [
+                        'article' => $article,
+                        'tab' => 'seo',
+                    ])
+                    ->with('success', $successMessage);
             }
 
             return redirect()

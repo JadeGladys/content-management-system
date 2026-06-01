@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests\Article;
 
+use App\Models\Article;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreArticleRequest extends FormRequest
 {
@@ -12,16 +15,37 @@ class StoreArticleRequest extends FormRequest
         return auth()->check();
     }
 
+    protected function prepareForValidation(): void
+    {
+        $title = trim((string) $this->input('title', ''));
+
+        $this->merge([
+            'title' => $title,
+            'slug' => Str::slug($title) ?: 'article',
+        ]);
+    }
+
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255', Rule::unique('articles', 'title')],
             'category' => ['required', 'string', Rule::in(config('articles.categories', []))],
-            'tags' => ['nullable', 'string', 'max:255'],
-            'overview' => ['nullable', 'string', 'max:255'],
-            'content' => ['nullable', 'json'],
-            'featured_image_id' => ['nullable', 'exists:media,id'],
-            'featured_image_upload' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+            'slug' => ['required', 'string', 'max:255'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if (
+                filled($this->input('slug')) &&
+                Article::query()->where('slug', $this->input('slug'))->exists()
+            ) {
+                $validator->errors()->add(
+                    'title',
+                    'This title creates a slug that already exists. Choose a different title.'
+                );
+            }
+        });
     }
 }

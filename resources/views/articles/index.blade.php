@@ -9,6 +9,12 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="mb-6 rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700 shadow-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/70 px-6 py-6 shadow-sm md:px-8">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center">
                     <div class="max-w-4xl">
@@ -69,8 +75,9 @@
                         Export
                     </button>
 
-                    <a
-                        href="{{ route('articles.create') }}"
+                    <button
+                        type="button"
+                        id="openArticleCreateModal"
                         class="flex items-center gap-2 rounded-2xl border border-blue-600 bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 512 512" aria-hidden="true">
@@ -80,25 +87,24 @@
                             </g>
                         </svg>
                         Create Article Entry
-                    </a>
-
+                    </button>
                 </div>
             </div>
 
-            <div class="rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-                <div class="max-w-full overflow-x-auto">
-                    <table class="min-w-[1180px] w-full table-fixed">
+            <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+                <div class="max-w-full overflow-x-hidden">
+                    <table class="w-full table-fixed">
                         <colgroup>
                             <col class="w-[4%]">
-                            <col class="w-[24%]">
+                            <col class="w-[18%]">
                             <col class="w-[14%]">
-                            <col class="w-[14%]">
-                            <col class="w-[14%]">
-                            <col class="w-[14%]">
+                            <col class="w-[15%]">
+                            <col class="w-[18%]">
                             <col class="w-[10%]">
-                            <col class="w-[16%]">
+                            <col class="w-[12%]">
+                            <col class="w-[12%]">
+                            <col class="w-[14%]">
                         </colgroup>
-
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
                             <tr>
                                 <th scope="col" class="w-8 py-5 pl-4">
@@ -111,15 +117,14 @@
                                         </span>
                                     </label>
                                 </th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Article title</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Category</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Tags</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Overview</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Author</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Status</th>
-                                <th scope="col" class="px-4 py-5 leading-tight">
-                                    <span class="block">Updated at</span>
-                                </th>
+                                <th scope="col" class="px-4 py-5">Article title</th>
+                                <th scope="col" class="px-4 py-5">Category</th>
+                                <th scope="col" class="px-4 py-5">Tags</th>
+                                <th scope="col" class="px-4 py-5">Overview</th>
+                                <th scope="col" class="px-4 py-5">Author</th>
+                                <th scope="col" class="px-4 py-5">Status</th>
+                                <th scope="col" class="px-4 py-5">Updated at</th>
+                                <th scope="col" class="px-4 py-5 text-center">Actions</th>
                             </tr>
                         </thead>
 
@@ -138,8 +143,8 @@
                                     </td>
 
                                     <td class="px-4 py-5 font-medium text-slate-900">
-                                        <div class="min-w-0">
-                                            <span class="block truncate font-semibold leading-relaxed" title="{{ $listedArticle->title }}">
+                                        <div class="min-w-0 max-w-[16rem] xl:max-w-[18rem]">
+                                            <span class="block truncate text-base font-semibold leading-relaxed" title="{{ $listedArticle->title }}">
                                                 {{ $listedArticle->title }}
                                             </span>
                                         </div>
@@ -162,7 +167,7 @@
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500">
-                                        <span class="block truncate whitespace-nowrap" title="{{ $listedArticle->overview ?? '—' }}">
+                                        <span class="block truncate" title="{{ $listedArticle->overview ?? '—' }}">
                                             {{ $listedArticle->overview ?? '—' }}
                                         </span>
                                     </td>
@@ -199,10 +204,37 @@
                                             {{ $listedArticle->updated_at->format('d M Y') }}
                                         </span>
                                     </td>
+
+                                    <td class="px-4 py-5">
+                                        <div class="flex items-center justify-center gap-2 whitespace-nowrap">
+                                            @if ($listedArticle->status === 'draft')
+                                                <a
+                                                    href="{{ route('articles.edit', $listedArticle) }}"
+                                                    class="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                    </svg>
+                                                    Edit
+                                                </a>
+                                            @else
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex items-center gap-1.5 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.437 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                    </svg>
+                                                    View
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-6 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="9" class="px-6 py-8 text-center text-sm text-slate-500">
                                         No articles found yet.
                                     </td>
                                 </tr>
@@ -263,6 +295,8 @@
             </div>
         </div>
     </div>
+
+    @include('articles.create-modal')
 @endsection
 
 @push('scripts')

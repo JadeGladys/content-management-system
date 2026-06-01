@@ -3,12 +3,11 @@
 namespace App\Services\Article;
 
 use App\Models\Article;
-use App\Services\Media\MediaService;
 use App\Models\User;
+use App\Services\Media\MediaService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Throwable;
 
 class ArticleService
@@ -17,12 +16,24 @@ class ArticleService
         protected MediaService $mediaService
     ) {
     }
+
     public function getPaginatedArticles(?string $search, User $actor): LengthAwarePaginator
     {
         return Article::query()
             ->with([
                 'authorUser:id,name',
             ])
+            ->when($actor->role === 'admin', function ($query) use ($actor) {
+                $query->where(function ($visibilityQuery) use ($actor) {
+                    $visibilityQuery
+                        ->whereIn('status', ['published', 'archived'])
+                        ->orWhere(function ($draftQuery) use ($actor) {
+                            $draftQuery
+                                ->where('status', 'draft')
+                                ->where('author', $actor->id);
+                        });
+                });
+            })
             ->when($actor->role === 'editor', function ($query) use ($actor) {
                 $query->where('author', $actor->id);
             })
@@ -32,7 +43,7 @@ class ArticleService
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
                         ->orWhere('category', 'ilike', "%{$search}%")
-                        ->orWhere('content', 'ilike', "%{$search}%")
+                        ->orWhere('tags', 'ilike', "%{$search}")
                         ->orWhereHas('authorUser', function ($authorQuery) use ($search) {
                             $authorQuery->where('name', 'ilike', "%{$search}%");
                         });
@@ -43,28 +54,17 @@ class ArticleService
             ->withQueryString();
     }
 
-    public function createArticle(array $data, User $actor, ?UploadedFile $featuredImageUpload = null): array
+    public function createArticle(array $data, User $actor): array
     {
         try {
-            $featuredImageId = $data['featured_image_id'] ?? null;
-            $reusedExistingFeaturedImage = false;
-
-            if ($featuredImageUpload) {
-                $media = $this->mediaService->storeMediaUpload($actor, $featuredImageUpload);
-                $featuredImageId = $media->id;
-                $reusedExistingFeaturedImage = ! $media->wasRecentlyCreated;
-            }
-
             $article = Article::create([
                 'title' => $data['title'],
-                'slug' => $this->generateUniqueSlug($data['title']),
+                'slug' => $data['slug'],
                 'category' => $data['category'],
-                'tags' => $this->normalizeTags($data['tags'] ?? null),
-                'overview' => $data['overview'] ?? null,
-                'content' => isset($data['content']) 
-                    ? json_decode($data['content'], true) 
-                    : null,
-                'featured_image_id' => $featuredImageId,
+                'tags' => [],
+                'overview' => null,
+                'content' => null,
+                'featured_image_id' => null,
                 'status' => 'draft',
                 'author' => $actor->id,
                 'updated_by' => $actor->id,
@@ -76,18 +76,71 @@ class ArticleService
                 'actor_id' => $actor->id,
                 'article_id' => $article->id,
                 'title' => $article->title,
-                'featured_image_id' => $featuredImageId,
                 'status' => 'success',
-                'featured_image_reused' => $reusedExistingFeaturedImage,
             ]);
 
             return [
                 'article' => $article,
-                'reused_existing_featured_image' => $reusedExistingFeaturedImage,
+                'reused_existing_featured_image' => false,
             ];
         } catch (Throwable $exception) {
             Log::error('Article creation failed.', [
                 'actor_id' => $actor->id,
+                'title' => $data['title'] ?? null,
+                'status' => 'failed',
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    public function updateArticle(array $data, Article $article, User $actor, ?UploadedFile $featuredImageUpload = null): array
+    {
+        try {
+            $featuredImageId = $data['featured_image_id'] ?? $article->featured_image_id;
+            $reusedExistingFeaturedImage = false;
+            $isPublishing = ($data['action'] ?? 'save') === 'publish';
+
+            if ($featuredImageUpload) {
+                $media = $this->mediaService->storeMediaUpload($actor, $featuredImageUpload);
+                $featuredImageId = $media->id;
+                $reusedExistingFeaturedImage = ! $media->wasRecentlyCreated;
+            }
+
+            $article->update([
+                'title' => $data['title'],
+                'slug' => $data['slug'],
+                'category' => $data['category'],
+                'tags' => $this->normalizeTags($data['tags'] ?? null),
+                'overview' => $data['overview'] ?? null,
+                'content' => filled($data['content'] ?? null)
+                    ? json_decode($data['content'], true)
+                    : null,
+                'featured_image_id' => $featuredImageId,
+                'status' => $isPublishing ? 'published' : $article->status,
+                'author' => $article->author,
+                'updated_by' => $actor->id,
+                'published_at' => $isPublishing ? ($article->published_at ?? now()) : $article->published_at,
+                'archived_at' => $article->archived_at,
+            ]);
+
+            Log::info('Article updated.', [
+                'actor_id' => $actor->id,
+                'article_id' => $article->id,
+                'title' => $article->title,
+                'status' => $isPublishing ? 'published' : 'saved',
+                'featured_image_reused' => $reusedExistingFeaturedImage,
+            ]);
+
+            return [
+                'article' => $article->fresh(),
+                'reused_existing_featured_image' => $reusedExistingFeaturedImage,
+            ];
+        } catch (Throwable $exception) {
+            Log::error('Article update failed.', [
+                'actor_id' => $actor->id,
+                'article_id' => $article->id,
                 'title' => $data['title'] ?? null,
                 'status' => 'failed',
                 'error' => $exception->getMessage(),
@@ -108,19 +161,5 @@ class ArticleService
             ->filter()
             ->values()
             ->all();
-    }
-
-    protected function generateUniqueSlug(string $title): string
-    {
-        $baseSlug = Str::slug($title);
-        $slug = $baseSlug;
-        $counter = 2;
-
-        while (Article::query()->where('slug', $slug)->exists()) {
-            $slug = "{$baseSlug}-{$counter}";
-            $counter++;
-        }
-
-        return $slug;
     }
 }

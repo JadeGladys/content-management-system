@@ -6,8 +6,8 @@ use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\Tag;
 use App\Models\User;
-use App\Services\Media\MediaService;
 use App\Services\Article\ArticleSeoService;
+use App\Services\Media\MediaService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -204,6 +204,39 @@ class ArticleService
         }
     }
 
+    public function canTransitionStatus(Article $article, string $targetStatus): bool
+    {
+        return match ($article->status) {
+            'published' => in_array($targetStatus, ['draft', 'archived'], true),
+            'archived' => $targetStatus === 'draft',
+            default => false,
+        };
+    }
+
+    public function transitionStatus(Article $article, string $targetStatus, User $actor): Article
+    {
+        if (! $this->canTransitionStatus($article, $targetStatus)) {
+            throw new \InvalidArgumentException('Invalid article status transition.');
+        }
+
+        $article->update([
+            'status' => $targetStatus,
+            'published_at' => $targetStatus === 'draft' ? null : $article->published_at,
+            'archived_at' => $targetStatus === 'archived' ? now() : null,
+            'updated_by' => $actor->id,
+        ]);
+
+        Log::info('Article status updated.', [
+            'actor_id' => $actor->id,
+            'article_id' => $article->id,
+            'from_status' => $article->getOriginal('status'),
+            'to_status' => $targetStatus,
+            'status' => 'success',
+        ]);
+
+        return $article->fresh(['authorUser', 'category', 'featuredImage', 'tags']);
+    }
+
     protected function resolveTagIds(array $tagIds, array $newTags, User $actor): array
     {
         $existingTagIds = collect($tagIds)
@@ -211,28 +244,26 @@ class ArticleService
             ->unique()
             ->values();
 
-        $createdTagIds = collect($newTags)
+        $newTagIds = collect($newTags)
             ->map(fn ($tag) => trim((string) $tag))
             ->filter()
-            ->unique(function ($tag) {
-                return Str::slug($tag);
-            })
-            ->map(function (string $tagName) use ($actor) {
-                $slug = Str::slug($tagName);
+            ->unique(fn ($tag) => Str::slug($tag))
+            ->map(function (string $tag) use ($actor) {
+                $tagSlug = Str::slug($tag);
 
-                $tag = Tag::query()->firstOrCreate(
-                    ['slug' => $slug],
+                $tagModel = Tag::query()->firstOrCreate(
+                    ['slug' => $tagSlug],
                     [
-                        'name' => $tagName,
+                        'name' => $tag,
                         'created_by' => $actor->id,
                     ]
                 );
 
-                return $tag->id;
+                return $tagModel->id;
             });
 
         return $existingTagIds
-            ->merge($createdTagIds)
+            ->merge($newTagIds)
             ->unique()
             ->values()
             ->all();

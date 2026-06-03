@@ -25,6 +25,14 @@ class UpdateCareerRequest extends FormRequest
             'category' => $category,
             'department' => trim((string) $this->input('department', '')),
             'slug' => Str::slug($slugSource) ?: 'career',
+
+            'meta_title' => trim((string) $this->input('meta_title', '')) ?: null,
+            'meta_description' => trim((string) $this->input('meta_description', '')) ?: null,
+            'meta_keywords' => trim((string) $this->input('meta_keywords', '')) ?: null,
+            'canonical_url' => trim((string) $this->input('canonical_url', '')) ?: null,
+            'og_title' => trim((string) $this->input('og_title', '')) ?: null,
+            'og_description' => trim((string) $this->input('og_description', '')) ?: null,
+            'no_index' => $this->boolean('no_index'),
         ]);
     }
 
@@ -35,7 +43,7 @@ class UpdateCareerRequest extends FormRequest
         $careerId = is_object($career) ? $career->getKey() : $career;
 
         return [
-            'action' => ['required', Rule::in(['save', 'publish'])],
+            'action' => ['required', Rule::in(['save', 'publish', 'generate_seo'])],
             'title' => ['required', 'string', 'max:255', Rule::unique('careers', 'title')->ignore($careerId)],
             'category' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
@@ -45,6 +53,14 @@ class UpdateCareerRequest extends FormRequest
             'description' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'requirements' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'deadline' => [Rule::requiredIf($publishing), 'nullable', 'date'],
+
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:320'],
+            'meta_keywords' => ['nullable', 'string', 'max:320'],
+            'canonical_url' => ['nullable', 'url', 'max:2048'],
+            'og_title' => ['nullable', 'string', 'max:255'],
+            'og_description' => ['nullable', 'string', 'max:320'],
+            'no_index' => ['nullable', 'boolean'],
         ];
     }
 }

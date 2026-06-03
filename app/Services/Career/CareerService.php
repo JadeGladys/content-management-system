@@ -5,6 +5,7 @@ namespace App\Services\Career;
 use App\Models\Career;
 use App\Models\CareerCategory;
 use App\Models\User;
+use App\Services\Career\CareerSeoService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -12,6 +13,11 @@ use Throwable;
 
 class CareerService
 {
+    public function __construct(
+        protected CareerSeoService $careerSeoService
+    ) {
+    }
+
     public function getPaginatedCareers(?string $search, User $actor): LengthAwarePaginator
     {
         return Career::query()
@@ -38,6 +44,7 @@ class CareerService
                     $innerQuery
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
+                        ->orWhere('meta_title', 'ilike', "%{$search}%")
                         ->orWhereHas('category', function ($categoryQuery) use ($search) {
                             $categoryQuery->where('name', 'ilike', "%{$search}%");
                         })
@@ -67,6 +74,15 @@ class CareerService
                 'requirements' => null,
                 'deadline' => null,
                 'status' => 'draft',
+
+                'meta_title' => null,
+                'meta_description' => null,
+                'meta_keywords' => null,
+                'canonical_url' => null,
+                'og_title' => null,
+                'og_description' => null,
+                'no_index' => false,
+
                 'created_by' => $actor->id,
                 'updated_by' => $actor->id,
                 'published_at' => null,
@@ -96,7 +112,9 @@ class CareerService
     public function updateCareer(array $data, Career $career, User $actor): Career
     {
         try {
-            $isPublishing = ($data['action'] ?? 'save') === 'publish';
+            $action = $data['action'] ?? 'save';
+            $isPublishing = $action === 'publish';
+            $isGeneratingSeo = $action === 'generate_seo';
 
             $career->update([
                 'title' => $data['title'],
@@ -123,6 +141,23 @@ class CareerService
                     : $career->published_at,
             ]);
 
+            $career->load('category');
+
+            $seoResult = $this->careerSeoService->buildPayload(
+                $data,
+                $career,
+                $isGeneratingSeo
+            );
+
+            $career->update($seoResult['payload']);
+
+            $this->careerSeoService->logGeneratedFields(
+                $career,
+                $actor,
+                $seoResult['generated_fields'],
+                $isGeneratingSeo ? 'generated' : 'updated'
+            );
+
             Log::info('Career updated.', [
                 'actor_id' => $actor->id,
                 'career_id' => $career->id,
@@ -130,7 +165,7 @@ class CareerService
                 'status' => $isPublishing ? 'published' : 'saved',
             ]);
 
-            return $career->fresh();
+            return $career->fresh(['category']);
         } catch (Throwable $exception) {
             Log::error('Career update failed.', [
                 'actor_id' => $actor->id,

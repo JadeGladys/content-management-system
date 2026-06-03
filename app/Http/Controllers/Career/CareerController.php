@@ -107,15 +107,28 @@ class CareerController extends Controller
         }
 
         try {
-            $updatedCareer = $this->careerService->updateCareer(
+            $this->careerService->updateCareer(
                 $request->validated(),
                 $career,
                 $request->user()
             );
 
+            $action = $request->input('action');
+
             $successMessage = $request->input('action') === 'publish'
                 ? 'Career updated and published successfully.'
-                : 'Career updated successfully.';
+                : ($action === 'generate_seo'
+                    ? 'SEO fields generated successfully.'
+                    : 'Career updated successfully.');
+
+            if ($action === 'generate_seo') {
+                return redirect()
+                    ->route('careers.edit', [
+                        'career' => $career,
+                        'tab' => 'seo',
+                    ])
+                    ->with('success', $successMessage);
+            }
 
             return redirect()
                 ->route('careers.index')

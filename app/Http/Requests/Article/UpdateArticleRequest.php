@@ -39,6 +39,7 @@ class UpdateArticleRequest extends FormRequest
 
     public function rules(): array
     {
+        $publishing = $this->input('action') === 'publish';
         $article = $this->route('article');
         $articleId = is_object($article) ? $article->getKey() : $article;
 
@@ -53,8 +54,8 @@ class UpdateArticleRequest extends FormRequest
             'new_tags' => ['nullable', 'array'],
             'new_tags.*' => ['nullable', 'string', 'max:50'],
             
-            'overview' => ['nullable', 'string', 'max:255'],
-            'content' => ['nullable', 'json'],
+            'overview' => [Rule::requiredIf($publishing), 'nullable', 'string', 'max:255'],
+            'content' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'featured_image_id' => ['nullable', 'exists:media,id'],
             'featured_image_upload' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
 

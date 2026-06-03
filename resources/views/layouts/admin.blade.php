@@ -9,7 +9,7 @@
 <body class="bg-slate-100 text-slate-900">
     <div class="flex min-h-screen">
         <x-sidebar />
-
+        <x-session-toast />
         <main class="min-w-0 flex-1 overflow-x-hidden p-8 lg:ml-[264px]">
             @yield('content')
         </main>

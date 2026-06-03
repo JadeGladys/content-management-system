@@ -10,6 +10,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             BootstrapAdminSeeder::class,
+            ArticleCategorySeeder::class,
+            CareerCategorySeeder::class,
+            TagSeeder::class,
         ]);
     }
 }

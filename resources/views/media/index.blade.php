@@ -55,10 +55,16 @@
 
             <div class="mb-6 flex flex-wrap items-center gap-4">
                 <form method="GET" action="{{ route('media.index') }}" class="w-full max-w-sm" role="search">
-                    <input type="hidden" name="view" value="{{ $viewMode }}">
+                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
 
-                    <div class="flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+                        <button type="submit" class="shrink-0 text-slate-400 transition hover:text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192.904 192.904" class="size-5 fill-current" aria-hidden="true">
+                                <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z" />
+                            </svg>
+                        </button>
+
                         <label for="search" class="sr-only">Search</label>
+
                         <input
                             type="search"
                             id="search"
@@ -68,11 +74,18 @@
                             class="w-full text-sm text-slate-900 outline-none placeholder:text-slate-400"
                         />
 
-                        <button type="submit" class="ml-auto text-slate-400 transition hover:text-blue-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192.904 192.904" class="size-5 fill-current" aria-hidden="true">
-                                <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z" />
-                            </svg>
-                        </button>
+                        @if ($search)
+                            <button
+                                type="button"
+                                id="clear-search"
+                                class="shrink-0 text-slate-400 transition hover:text-rose-600"
+                                aria-label="Clear search"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        @endif
                     </div>
                 </form>
 
@@ -333,6 +346,17 @@
             if ((event.target.files ?? []).length > 0) {
                 mediaUploadForm?.submit();
             }
+        });
+
+        document.getElementById('clear-search')?.addEventListener('click', () => {
+            const searchInput = document.getElementById('search');
+
+            if (!searchInput) {
+                return;
+            }
+
+            searchInput.value = '';
+            searchInput.form.submit();
         });
     </script>
 @endpush

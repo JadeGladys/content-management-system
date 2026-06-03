@@ -31,6 +31,15 @@ return new class extends Migration
             $table->json('requirements')->nullable();
             $table->dateTime('deadline')->nullable();
             $table->enum('status', ['draft', 'published', 'closed'])->default('draft');
+
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+            $table->string('meta_keywords')->nullable();
+            $table->string('canonical_url')->nullable();
+            $table->string('og_title')->nullable();
+            $table->text('og_description')->nullable();
+            $table->boolean('no_index')->default(false);
+
             $table->foreignUlid('created_by')->constrained('users');
             $table->foreignUlid('updated_by')->nullable()->constrained('users');
             $table->timestamp('published_at')->nullable();

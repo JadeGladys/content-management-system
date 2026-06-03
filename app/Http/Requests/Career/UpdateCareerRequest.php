@@ -42,8 +42,8 @@ class UpdateCareerRequest extends FormRequest
             'slug' => ['required', 'string', 'max:255', Rule::unique('careers', 'slug')->ignore($careerId)],
             'location' => [Rule::requiredIf($publishing), 'nullable', 'string', 'max:255'],
             'about' => [Rule::requiredIf($publishing), 'nullable', 'json'],
-            'description' => ['nullable', 'json'],
-            'requirements' => ['nullable', 'json'],
+            'description' => [Rule::requiredIf($publishing), 'nullable', 'json'],
+            'requirements' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'deadline' => [Rule::requiredIf($publishing), 'nullable', 'date'],
         ];
     }

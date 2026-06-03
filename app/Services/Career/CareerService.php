@@ -144,6 +144,39 @@ class CareerService
         }
     }
 
+    public function canTransitionStatus(Career $career, string $targetStatus): bool
+    {
+        return match ($career->status) {
+            'published' => in_array($targetStatus, ['draft', 'closed'], true),
+            'closed' => $targetStatus === 'draft',
+            default => false,
+        };
+    }
+
+    public function transitionStatus(Career $career, string $targetStatus, User $actor): Career
+    {
+        if (! $this->canTransitionStatus($career, $targetStatus)) {
+            throw new \InvalidArgumentException('Invalid career status transition.');
+        }
+
+        $career->update([
+            'status' => $targetStatus,
+            'published_at' => $targetStatus === 'draft' ? null : $career->published_at,
+            'closed_at' => $targetStatus === 'closed' ? now() : null,
+            'updated_by' => $actor->id,
+        ]);
+
+        Log::info('Career status updated.', [
+            'actor_id' => $actor->id,
+            'career_id' => $career->id,
+            'from_status' => $career->getOriginal('status'),
+            'to_status' => $targetStatus,
+            'status' => 'success',
+        ]);
+
+        return $career->fresh(['createdBy', 'category']);
+    }
+
     protected function resolveCategoryId(string $categoryName, User $actor): string
     {
         $normalizedCategoryName = trim($categoryName);

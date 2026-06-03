@@ -110,7 +110,6 @@
                                 <th scope="col" class="px-4 py-5">Career title</th>
                                 <th scope="col" class="px-4 py-5">Category</th>
                                 <th scope="col" class="px-4 py-5">Department</th>
-                                <th scope="col" class="px-4 py-5">Location</th>
                                 <th scope="col" class="px-4 py-5">Created By</th>
                                 <th scope="col" class="px-4 py-5">Status</th>
                                 <th scope="col" class="px-4 py-5 leading-tight">
@@ -151,12 +150,6 @@
                                     <td class="px-4 py-5 text-slate-500">
                                         <span class="block truncate" title="{{ $listedCareer->department }}">
                                             {{ $listedCareer->department ?? '—' }}
-                                        </span>
-                                    </td>
-
-                                    <td class="px-4 py-5 text-slate-500">
-                                        <span class="block truncate" title="{{ $listedCareer->location }}">
-                                            {{ $listedCareer->location ?? '—' }}
                                         </span>
                                     </td>
 
@@ -206,16 +199,16 @@
                                                     Edit
                                                 </a>
                                             @else
-                                                <button
-                                                    type="button"
-                                                    class="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
+                                                <a
+                                                    href="{{ route('careers.show', $listedCareer) }}"
+                                                    class="inline-flex items-center gap-1.5 rounded-2xl border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-5">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-3.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.437 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                                     </svg>
                                                     View
-                                                </button>
+                                                </a>
                                             @endif
 
                                             <button

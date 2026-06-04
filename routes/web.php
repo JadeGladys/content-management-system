@@ -1,10 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
-Route::middleware(['auth', 'cms.access'])->get('/', function () {
-    return view('dashboard');
-})->name('dashboard');
+Route::middleware(['auth', 'cms.access'])->get('/', [DashboardController::class, 'index'])
+    ->name('dashboard');
 
 require __DIR__.'/auth.php';
 

@@ -22,9 +22,22 @@ class UserController extends Controller
     {
         $search = $request->string('search')->toString();
 
+        $filters = [
+            'roles' => collect((array) $request->input('roles', []))
+                ->filter()
+                ->values()
+                ->all(),
+            'access_statuses' => collect((array) $request->input('access_statuses', []))
+                ->filter()
+                ->values()
+                ->all(),
+        ];
+
         return view('users.index', [
-            'users' => $this->userService->getPaginatedUsers($search),
+            'users' => $this->userService->getPaginatedUsers($search, $filters),
             'search' => $search,
+            'filters' => $filters,
+            'hasActiveFilters' => ! empty($filters['roles']) || ! empty($filters['access_statuses']),
         ]);
     }
 

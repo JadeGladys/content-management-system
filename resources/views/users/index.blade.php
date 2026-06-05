@@ -23,8 +23,22 @@
 
             <div class="mb-6 flex flex-wrap items-center gap-6">
                 <form method="GET" action="{{ route('users.index') }}" class="w-full max-w-sm" role="search">
-                    <div class="flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+                    @foreach (($filters['roles'] ?? []) as $role)
+                        <input type="hidden" name="roles[]" value="{{ $role }}">
+                    @endforeach
+
+                    @foreach (($filters['access_statuses'] ?? []) as $status)
+                        <input type="hidden" name="access_statuses[]" value="{{ $status }}">
+                    @endforeach
+                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+                        <button type="submit" class="shrink-0 text-slate-400 transition hover:text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192.904 192.904" class="size-5 fill-current" aria-hidden="true">
+                                <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z" />
+                            </svg>
+                        </button>
+
                         <label for="search" class="sr-only">Search</label>
+
                         <input
                             type="search"
                             id="search"
@@ -34,23 +48,36 @@
                             class="w-full text-sm text-slate-900 outline-none placeholder:text-slate-400"
                         />
 
-                        <button type="submit" class="ml-auto text-slate-400 transition hover:text-blue-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192.904 192.904" class="size-5 fill-current" aria-hidden="true">
-                                <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z" />
-                            </svg>
-                        </button>
+                        @if ($search)
+                            <button
+                                type="button"
+                                id="clear-search"
+                                class="shrink-0 text-slate-400 transition hover:text-blue-600"
+                                aria-label="Clear search"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        @endif
                     </div>
                 </form>
 
                 <div class="ml-auto flex flex-wrap gap-4">
                     <button
                         type="button"
-                        class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        id="openUserFilterPanel"
+                        class="{{ $hasActiveFilters ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50' }} flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 64 64" aria-hidden="true">
                             <path d="M26.55 61.295a2.18 2.18 0 0 1-2.18-2.18v-20.96L4.161 15.928A6.115 6.115 0 0 1 8.685 5.705h46.63a6.115 6.115 0 0 1 4.524 10.224L39.63 38.154v12.241a2.18 2.18 0 0 1-.817 1.7l-10.9 8.72a2.18 2.18 0 0 1-1.363.48M8.685 10.065a1.755 1.755 0 0 0-1.297 2.932l20.775 22.89a2.18 2.18 0 0 1 .567 1.428v17.266l6.54-5.276v-11.99a2.18 2.18 0 0 1 .567-1.472l20.775-22.89a1.755 1.755 0 0 0-1.297-2.888z" />
                         </svg>
                         Filter
+                        @if (! empty($filters['roles']) || ! empty($filters['access_statuses']))
+                            <span class="{{ $hasActiveFilters ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700' }} inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold">
+                                {{ count($filters['roles']) + count($filters['access_statuses']) }}
+                            </span>
+                        @endif
                     </button>
 
                     <button
@@ -182,8 +209,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center text-sm text-slate-500">
-                                        No users found yet.
+                                    <td colspan="7" class="px-6 py-8 text-center text-sm text-slate-500">
+                                        No users found.
                                     </td>
                                 </tr>
                             @endforelse
@@ -293,6 +320,9 @@
             </div>
         </form>
     </x-modal>
+
+    <x-user-filter-panel :search="$search" :filters="$filters" />
+
 @endsection
 
 @push('scripts')
@@ -334,5 +364,17 @@
         @if ($errors->any())
             showCreateUserModal();
         @endif
+
+        const clearSearchButton = document.getElementById('clear-search');
+        const searchInput = document.getElementById('search');
+        const searchForm = searchInput?.closest('form');
+
+        clearSearchButton?.addEventListener('click', () => {
+            if (!searchInput || !searchForm) return;
+
+            searchInput.value = '';
+            searchForm.submit();
+        });
+
     </script>
 @endpush

@@ -18,8 +18,18 @@ class UserService
     ) {
     }
 
-    public function getPaginatedUsers(?string $search = null): LengthAwarePaginator
+    public function getPaginatedUsers(?string $search = null, array $filters = []): LengthAwarePaginator
     {
+        $roles = collect($filters['roles'] ?? [])
+            ->filter()
+            ->values()
+            ->all();
+
+        $accessStatuses = collect($filters['access_statuses'] ?? [])
+            ->filter()
+            ->values()
+            ->all();
+
         return User::query()
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($innerQuery) use ($search) {
@@ -27,6 +37,20 @@ class UserService
                         ->where('name', 'ilike', "%{$search}%")
                         ->orWhere('email', 'ilike', "%{$search}%")
                         ->orWhere('role', 'ilike', "%{$search}%");
+                });
+            })
+            ->when(! empty($roles), function ($query) use ($roles) {
+                $query->whereIn('role', $roles);
+            })
+            ->when(! empty($accessStatuses), function ($query) use ($accessStatuses) {
+                $query->where(function ($innerQuery) use ($accessStatuses) {
+                    if (in_array('pending', $accessStatuses, true)) {
+                        $innerQuery->orWhere('must_set_password', true);
+                    }
+
+                    if (in_array('active', $accessStatuses, true)) {
+                        $innerQuery->orWhere('must_set_password', false);
+                    }
                 });
             })
             ->latest('updated_at')

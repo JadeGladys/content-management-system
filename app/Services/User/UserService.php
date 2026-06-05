@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\User;
 
 use App\Models\User;
 use App\Services\Auth\PasswordTokenService;
@@ -9,6 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
+use Illuminate\Validation\ValidationException;
 
 class UserService
 {
@@ -52,6 +53,49 @@ class UserService
             'status' => 'success',
         ]);
 
+        $tokenData = $this->sendPasswordSetupEmail(
+            $user,
+            $actor,
+            'Your CMS account has been created.'
+        );
+
+        return [
+            'user' => $user,
+            'password_setup_token' => $tokenData['plain_token'],
+            'user_token' => $tokenData['user_token'],
+        ];
+    }
+
+    public function resendPasswordSetup(User $targetUser, User $actor): array
+    {
+        if (! $targetUser->must_set_password) {
+            throw ValidationException::withMessages([
+                'user' => 'This user has already completed password setup.',
+            ]);
+        }
+
+        Log::info('Password setup resend requested.', [
+            'actor_id' => $actor->id,
+            'target_id' => $targetUser->id,
+            'user_id' => $targetUser->id,
+            'status' => 'success',
+        ]);
+
+        $tokenData = $this->sendPasswordSetupEmail(
+            $targetUser,
+            $actor,
+            'An administrator sent you a new password setup link.'
+        );
+
+        return [
+            'user' => $targetUser,
+            'password_setup_token' => $tokenData['plain_token'],
+            'user_token' => $tokenData['user_token'],
+        ];
+    }
+
+    protected function sendPasswordSetupEmail(User $user, User $actor, string $introText): array
+    {
         $tokenData = $this->passwordTokenService->createForUser(
             $user,
             'password_setup',
@@ -70,7 +114,7 @@ class UserService
                     $user,
                     $setupUrl,
                     'Set up your CMS password',
-                    'Your CMS account has been created.',
+                    $introText,
                     'Set up password',
                     'This link will expire in 24 hours.',
                 )
@@ -95,8 +139,7 @@ class UserService
         }
 
         return [
-            'user' => $user,
-            'password_setup_token' => $tokenData['plain_token'],
+            'plain_token' => $tokenData['plain_token'],
             'user_token' => $tokenData['user_token'],
         ];
     }

@@ -3,12 +3,6 @@
 @section('content')
     <div class="my-6 px-4 md:px-8">
         <div class="mx-auto max-w-7xl min-w-0">
-            @if (session('success'))
-                <div class="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 shadow-sm">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             <div class="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/70 px-6 py-6 shadow-sm md:px-8">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center">
                     <div class="max-w-4xl">
@@ -94,6 +88,7 @@
                             <col class="w-[22%]">
                             <col class="w-[10%]">
                             <col class="w-[14%]">
+                            <col class="w-[10%]">
                             <col class="w-[16%]">
                         </colgroup>
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
@@ -115,6 +110,7 @@
                                 <th scope="col" class="px-4 py-5 leading-tight">
                                     <span class="block">Updated at</span>
                                 </th>
+                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Action</th>
                             </tr>
                         </thead>
 
@@ -163,9 +159,26 @@
                                     <td class="px-4 py-5 text-slate-500">
                                         <span class="block leading-6">
                                             {{ $listedUser->updated_at->format('d M Y,') }}<br>
-                                            {{ $listedUser->updated_at->format('g:i a') }}
                                         </span>
                                     </td>
+
+                                    <td class="px-4 py-5 text-slate-500">
+                                        @if ($listedUser->must_set_password)
+                                            <form method="POST" action="{{ route('users.password-setup.resend', $listedUser) }}">
+                                                @csrf
+                                                <button
+                                                    type="submit"
+                                                    class="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-semibold text-amber-700 transition hover:bg-amber-100"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992V4.356m-.58 4.992A9 9 0 1 0 6.5 18.5" />
+                                                    </svg>
+                                                    Resend setup
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </td>
+
                                 </tr>
                             @empty
                                 <tr>

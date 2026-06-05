@@ -35,19 +35,52 @@ class CareerController extends Controller
         ]);
     }
 
+    public function create(Request $request): View
+    {
+        return $this->careerFormView(
+            new Career([
+                'status' => 'draft',
+                'no_index' => false,
+            ]),
+            [
+                'pageTitle' => 'Create Career',
+                'pageHeading' => 'Create Career',
+                'pageDescription' => 'Start a new career entry, save it as a draft, or publish it once all required details are complete.',
+                'formAction' => route('careers.store'),
+                'formMethod' => 'POST',
+            ]
+        );
+    }
+
     public function store(StoreCareerRequest $request): RedirectResponse
     {
         try {
-            $this->careerService->createCareer($request->validated(), $request->user());
+            $career = $this->careerService->createCareer($request->validated(), $request->user());
+
+            $action = $request->input('action');
+            $successMessage = $action === 'publish'
+                ? 'Career created and published successfully.'
+                : ($action === 'generate_seo'
+                    ? 'Career created and SEO fields generated successfully.'
+                    : 'Career created successfully.');
+
+            if ($action === 'generate_seo') {
+                return redirect()
+                    ->route('careers.edit', [
+                        'career' => $career,
+                        'tab' => 'seo',
+                    ])
+                    ->with('success', $successMessage);
+            }
 
             return redirect()
                 ->route('careers.index')
-                ->with('success', 'Career draft created successfully.');
+                ->with('success', $successMessage);
         } catch (\Throwable $exception) {
             return redirect()
-                ->route('careers.index')
+                ->back()
                 ->withInput()
-                ->with('error', 'Something went wrong while creating the career draft. Please try again.');
+                ->with('error', 'Something went wrong while creating the career. Please try again.');
         }
     }
 
@@ -59,23 +92,16 @@ class CareerController extends Controller
             return $guardResponse;
         }
 
-        return view('careers.update', [
-            'career' => $career->load('category'),
-            'pageTitle' => $career->title,
-            'pageHeading' => $career->title,
-            'pageDescription' => 'Update the job details, adjust the slug and deadline, then save or publish when ready.',
-            'formAction' => route('careers.update', $career),
-            'formMethod' => 'PUT',
-            'categories' => CareerCategory::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug']),
-            'locationSuggestions' => Career::query()
-                ->whereNotNull('location')
-                ->select('location')
-                ->distinct()
-                ->orderBy('location')
-                ->pluck('location'),
-        ]);
+        return $this->careerFormView(
+            $career->load('category'),
+            [
+                'pageTitle' => $career->title,
+                'pageHeading' => $career->title,
+                'pageDescription' => 'Update the job details, adjust the slug and deadline, then save or publish when ready.',
+                'formAction' => route('careers.update', $career),
+                'formMethod' => 'PUT',
+            ]
+        );
     }
 
     public function show(Career $career, Request $request): View|RedirectResponse
@@ -253,5 +279,21 @@ class CareerController extends Controller
         }
 
         return null;
+    }
+
+    protected function careerFormView(Career $career, array $pageConfig): View
+    {
+        return view('careers.update', array_merge($pageConfig, [
+            'career' => $career,
+            'categories' => CareerCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
+            'locationSuggestions' => Career::query()
+                ->whereNotNull('location')
+                ->select('location')
+                ->distinct()
+                ->orderBy('location')
+                ->pluck('location'),
+        ]));
     }
 }

@@ -63,17 +63,27 @@ class CareerService
     public function createCareer(array $data, User $actor): Career
     {
         try {
+            $action = $data['action'] ?? 'save';
+            $isPublishing = $action === 'publish';
+            $isGeneratingSeo = $action === 'generate_seo';
+
             $career = Career::create([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
                 'career_category_id' => $this->resolveCategoryId($data['category'], $actor),
-                'location' => null,
+                'location' => $data['location'] ?? null,
                 'department' => $data['department'],
-                'about' => null,
-                'description' => null,
-                'requirements' => null,
-                'deadline' => null,
-                'status' => 'draft',
+                'about' => filled($data['about'] ?? null)
+                    ? json_decode($data['about'], true)
+                    : null,
+                'description' => filled($data['description'] ?? null)
+                    ? json_decode($data['description'], true)
+                    : null,
+                'requirements' => filled($data['requirements'] ?? null)
+                    ? json_decode($data['requirements'], true)
+                    : null,
+                'deadline' => $data['deadline'] ?? null,
+                'status' => $isPublishing ? 'published' : 'draft',
 
                 'meta_title' => null,
                 'meta_description' => null,
@@ -81,22 +91,39 @@ class CareerService
                 'canonical_url' => null,
                 'og_title' => null,
                 'og_description' => null,
-                'no_index' => false,
+                'no_index' => (bool) ($data['no_index'] ?? false),
 
                 'created_by' => $actor->id,
                 'updated_by' => $actor->id,
-                'published_at' => null,
+                'published_at' => $isPublishing ? now() : null,
                 'closed_at' => null,
             ]);
+
+            $career->load('category');
+
+            $seoResult = $this->careerSeoService->buildPayload(
+                $data,
+                $career,
+                $isGeneratingSeo
+            );
+
+            $career->update($seoResult['payload']);
+
+            $this->careerSeoService->logGeneratedFields(
+                $career,
+                $actor,
+                $seoResult['generated_fields'],
+                $isGeneratingSeo ? 'generated' : 'created'
+            );
 
             Log::info('Career created.', [
                 'actor_id' => $actor->id,
                 'career_id' => $career->id,
                 'title' => $career->title,
-                'status' => 'success',
+                'status' => $isPublishing ? 'published' : 'success',
             ]);
 
-            return $career;
+            return $career->fresh(['category']);
         } catch (Throwable $exception) {
             Log::error('Career creation failed.', [
                 'actor_id' => $actor->id,

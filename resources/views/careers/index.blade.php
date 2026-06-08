@@ -3,17 +3,6 @@
 @section('content')
     <div class="my-6 px-4 md:px-8">
         <div class="mx-auto max-w-7xl min-w-0">
-            @if (session('success'))
-                <div class="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 shadow-sm">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="mb-6 rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700 shadow-sm">
-                    {{ session('error') }}
-                </div>
-            @endif
 
             <div class="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/70 px-6 py-6 shadow-sm md:px-8">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center">

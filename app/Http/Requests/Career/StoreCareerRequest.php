@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests\Career;
 
-use App\Models\Career;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Validator;
 
 class StoreCareerRequest extends FormRequest
 {
@@ -64,18 +62,10 @@ class StoreCareerRequest extends FormRequest
         ];
     }
 
-    public function withValidator(Validator $validator): void
+    public function messages(): array
     {
-        $validator->after(function (Validator $validator) {
-            if (
-                filled($this->input('slug')) &&
-                Career::query()->where('slug', $this->input('slug'))->exists()
-            ) {
-                $validator->errors()->add(
-                    'slug',
-                    'This slug already exists. Update the title or edit the slug manually.'
-                );
-            }
-        });
+        return [
+            'slug.unique' => 'This slug already exists. Update the title or edit the slug manually.',
+        ];
     }
 }

@@ -216,6 +216,27 @@ class CareerController extends Controller
         }
     }
 
+    public function destroy(Career $career, Request $request): RedirectResponse
+    {
+        $guardResponse = $this->ensureEditableCareer($career, $request->user());
+
+        if ($guardResponse) {
+            return $guardResponse;
+        }
+
+        try {
+            $this->careerService->deleteCareer($career, $request->user());
+
+            return redirect()
+                ->route('careers.index')
+                ->with('success', 'Career deleted successfully.');
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->route('careers.edit', $career)
+                ->with('error', 'Something went wrong while deleting the career. Please try again.');
+        }
+    }
+
     protected function ensureEditableCareer(Career $career, $actor): ?RedirectResponse
     {
         if ($career->status !== 'draft') {

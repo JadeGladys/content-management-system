@@ -206,6 +206,33 @@ class CareerService
         }
     }
 
+    public function deleteCareer(Career $career, User $actor): void
+    {
+        try {
+            $careerId = $career->id;
+            $careerTitle = $career->title;
+
+            $career->delete();
+
+            Log::info('Career deleted.', [
+                'actor_id' => $actor->id,
+                'career_id' => $careerId,
+                'title' => $careerTitle,
+                'status' => 'success',
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('Career deletion failed.', [
+                'actor_id' => $actor->id,
+                'career_id' => $career->id,
+                'title' => $career->title,
+                'status' => 'failed',
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+    }
+
     public function canTransitionStatus(Career $career, string $targetStatus): bool
     {
         return match ($career->status) {

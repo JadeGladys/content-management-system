@@ -22,6 +22,9 @@ Route::middleware(['auth', 'cms.access'])->group(function () {
     Route::put('/admin/careers/{career}', [CareerController::class, 'update'])
         ->name('careers.update');
 
+    Route::delete('/admin/careers/{career}', [CareerController::class, 'destroy'])
+    ->name('careers.destroy');
+
     Route::put('/admin/careers/{career}/status', [CareerController::class, 'updateStatus'])
         ->name('careers.status.update');
 });

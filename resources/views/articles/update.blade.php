@@ -49,7 +49,9 @@
 
             <form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" class="space-y-8">
                 @csrf
-                @method($formMethod)
+                @if (strtoupper($formMethod) !== 'POST')
+                    @method($formMethod)
+                @endif
 
                 <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-400 pb-5">
                     <div class="flex items-center gap-6">

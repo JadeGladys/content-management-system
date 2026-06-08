@@ -31,28 +31,65 @@ class ArticleController extends Controller
         return view('articles.index', [
             'articles' => $this->articleService->getPaginatedArticles($search, $request->user()),
             'search' => $search,
-            'categories' => ArticleCategory::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug']),
+        ]);
+    }
+
+    public function create(Request $request): View
+    {
+        $article = new Article([
+            'status' => 'draft',
+            'no_index' => false,
+        ]);
+
+        $article->setRelation('tags', collect());
+
+        return $this->articleFormView($article, [
+            'pageTitle' => 'Create Article',
+            'pageHeading' => 'Create Article',
+            'formAction' => route('articles.store'),
+            'formMethod' => 'POST',
         ]);
     }
 
     public function store(StoreArticleRequest $request): RedirectResponse
     {
         try {
-            $this->articleService->createArticle(
+            $result = $this->articleService->createArticle(
                 $request->validated(),
-                $request->user()
+                $request->user(),
+                $request->file('featured_image_upload')
             );
+
+            $article = $result['article'];
+            $action = $request->input('action');
+
+            $successMessage = $action === 'publish'
+                ? 'Article created and published successfully.'
+                : ($action === 'generate_seo'
+                    ? 'Article created and SEO fields generated successfully.'
+                    : 'Article created successfully.');
+
+            if ($result['reused_existing_featured_image']) {
+                $successMessage .= ' This image already exists in the media library, so the existing asset was reused.';
+            }
+
+            if ($action === 'generate_seo') {
+                return redirect()
+                    ->route('articles.edit', [
+                        'article' => $article,
+                        'tab' => 'seo',
+                    ])
+                    ->with('success', $successMessage);
+            }
 
             return redirect()
                 ->route('articles.index')
-                ->with('success', 'Article draft created successfully.');
+                ->with('success', $successMessage);
         } catch (\Throwable $exception) {
             return redirect()
-                ->route('articles.index')
+                ->back()
                 ->withInput()
-                ->with('error', 'Something went wrong while creating the article draft. Please try again.');
+                ->with('error', 'Something went wrong while creating the article. Please try again.');
         }
     }
 
@@ -64,22 +101,15 @@ class ArticleController extends Controller
             return $guardResponse;
         }
 
-        return view('articles.update', [
-            'article' => $article->load(['category', 'tags', 'featuredImage']),
-            'pageTitle' => $article->title,
-            'pageHeading' => $article->title,
-            'formAction' => route('articles.update', $article),
-            'formMethod' => 'PUT',
-            'categories' => ArticleCategory::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug']),
-            'mediaLibrary' => Media::query()
-                ->latest()
-                ->get(['id', 'file_name', 'file_path', 'file_type', 'file_size']),
-            'availableTags' => Tag::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug']),
-        ]);
+        return $this->articleFormView(
+            $article->load(['category', 'tags', 'featuredImage']),
+            [
+                'pageTitle' => $article->title,
+                'pageHeading' => $article->title,
+                'formAction' => route('articles.update', $article),
+                'formMethod' => 'PUT',
+            ]
+        );
     }
 
     public function show(Article $article, Request $request): View|RedirectResponse

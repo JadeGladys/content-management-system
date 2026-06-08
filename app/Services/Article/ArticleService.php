@@ -66,17 +66,42 @@ class ArticleService
             ->withQueryString();
     }
 
-    public function createArticle(array $data, User $actor): array
+    public function createArticle(array $data, User $actor, ?UploadedFile $featuredImageUpload = null): array
     {
         try {
+            $featuredImageId = $data['featured_image_id'] ?? null;
+            $reusedExistingFeaturedImage = false;
+            $action = $data['action'] ?? 'save';
+            $isPublishing = $action === 'publish';
+            $isGeneratingSeo = $action === 'generate_seo';
+
+            if ($featuredImageUpload) {
+                $media = $this->mediaService->storeMediaUpload($actor, $featuredImageUpload);
+                $featuredImageId = $media->id;
+                $reusedExistingFeaturedImage = ! $media->wasRecentlyCreated;
+            }
+
+            $resolvedTagIds = $this->resolveTagIds(
+                $data['tag_ids'] ?? [],
+                $data['new_tags'] ?? [],
+                $actor
+            );
+
+            $resolvedTagNames = Tag::query()
+                ->whereIn('id', $resolvedTagIds)
+                ->pluck('name')
+                ->all();
+
             $article = Article::create([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
                 'article_category_id' => $this->resolveCategoryId($data['category'], $actor),
-                'overview' => null,
-                'content' => null,
-                'featured_image_id' => null,
-                'status' => 'draft',
+                'overview' => $data['overview'] ?? null,
+                'content' => filled($data['content'] ?? null)
+                    ? json_decode($data['content'], true)
+                    : null,
+                'featured_image_id' => $featuredImageId,
+                'status' => $isPublishing ? 'published' : 'draft',
 
                 'meta_title' => null,
                 'meta_description' => null,
@@ -84,25 +109,46 @@ class ArticleService
                 'canonical_url' => null,
                 'og_title' => null,
                 'og_description' => null,
-                'og_image_id' => null,
-                'no_index' => false,
+                'og_image_id' => $data['og_image_id'] ?? $featuredImageId,
+                'no_index' => (bool) ($data['no_index'] ?? false),
 
                 'author' => $actor->id,
                 'updated_by' => $actor->id,
-                'published_at' => null,
+                'published_at' => $isPublishing ? now() : null,
                 'archived_at' => null,
             ]);
+
+            $article->load('category');
+
+            $seoResult = $this->articleSeoService->buildPayload(
+                $data,
+                $article,
+                $resolvedTagNames,
+                $featuredImageId,
+                $isGeneratingSeo
+            );
+
+            $article->update($seoResult['payload']);
+            $article->tags()->sync($resolvedTagIds);
+
+            $this->articleSeoService->logGeneratedFields(
+                $article,
+                $actor,
+                $seoResult['generated_fields'],
+                $isGeneratingSeo ? 'generated' : 'created'
+            );
 
             Log::info('Article created.', [
                 'actor_id' => $actor->id,
                 'article_id' => $article->id,
                 'title' => $article->title,
-                'status' => 'success',
+                'status' => $isPublishing ? 'published' : 'success',
+                'featured_image_reused' => $reusedExistingFeaturedImage,
             ]);
 
             return [
-                'article' => $article,
-                'reused_existing_featured_image' => false,
+                'article' => $article->fresh(['category', 'tags', 'featuredImage']),
+                'reused_existing_featured_image' => $reusedExistingFeaturedImage,
             ];
         } catch (Throwable $exception) {
             Log::error('Article creation failed.', [

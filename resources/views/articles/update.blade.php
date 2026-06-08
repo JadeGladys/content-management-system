@@ -34,6 +34,19 @@
                 <h1 class="font-serif text-[38px] font-bold leading-tight text-[#111827] max-w-full">{{ $pageHeading }}</h1>
             </div>
 
+            @if ($article->exists && $article->status === 'draft')
+                <form
+                    id="article-delete-form"
+                    method="POST"
+                    action="{{ route('articles.destroy', $article) }}"
+                    class="hidden"
+                    onsubmit="return confirm('Delete this article draft? This action cannot be undone.');"
+                >
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
+
             <form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" class="space-y-8">
                 @csrf
                 @method($formMethod)
@@ -57,56 +70,71 @@
                         </button>
                     </div>
 
-                    <div id="article-submit-menu" class="relative">
-                        <input
-                            type="hidden"
-                            name="action"
-                            id="article-submit-action"
-                            value="{{ old('action', 'save') }}"
-                        >
-
-                        <div class="flex overflow-hidden rounded-2xl shadow-sm">
+                    <div class="flex flex-wrap items-center justify-end gap-3">
+                        @if ($article->exists && $article->status === 'draft')
                             <button
                                 type="submit"
-                                id="article-submit-primary"
-                                class="inline-flex min-w-44 items-center justify-center bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                form="article-delete-form"
+                                class="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100"
                             >
-                                Save
-                            </button>
-
-                            <button
-                                type="button"
-                                id="article-submit-toggle"
-                                class="inline-flex items-center justify-center border-l border-blue-500 bg-blue-600 px-4 py-3 text-white transition hover:bg-blue-700"
-                                aria-expanded="false"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.11 0 0 0-7.5 0" />
                                 </svg>
+                                Delete
                             </button>
-                        </div>
+                        @endif
 
-                        <div
-                            id="article-submit-options"
-                            class="absolute right-0 top-[calc(100%+0.75rem)] z-30 hidden min-w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.35)]"
-                        >
-                            <button
-                                type="button"
-                                class="article-submit-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                                data-submit-action="save"
-                                data-submit-label="Save"
+                        <div id="article-submit-menu" class="relative">
+                            <input
+                                type="hidden"
+                                name="action"
+                                id="article-submit-action"
+                                value="{{ old('action', 'save') }}"
                             >
-                                Save
-                            </button>
 
-                            <button
-                                type="button"
-                                class="article-submit-option flex w-full items-center justify-between border-t border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                                data-submit-action="publish"
-                                data-submit-label="Save & Publish"
+                            <div class="flex overflow-hidden rounded-2xl shadow-sm">
+                                <button
+                                    type="submit"
+                                    id="article-submit-primary"
+                                    class="inline-flex min-w-44 items-center justify-center bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                >
+                                    Save
+                                </button>
+
+                                <button
+                                    type="button"
+                                    id="article-submit-toggle"
+                                    class="inline-flex items-center justify-center border-l border-blue-500 bg-blue-600 px-4 py-3 text-white transition hover:bg-blue-700"
+                                    aria-expanded="false"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div
+                                id="article-submit-options"
+                                class="absolute right-0 top-[calc(100%+0.75rem)] z-30 hidden min-w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.35)]"
                             >
-                                Save &amp; Publish
-                            </button>
+                                <button
+                                    type="button"
+                                    class="article-submit-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                    data-submit-action="save"
+                                    data-submit-label="Save"
+                                >
+                                    Save
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="article-submit-option flex w-full items-center justify-between border-t border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                    data-submit-action="publish"
+                                    data-submit-label="Save & Publish"
+                                >
+                                    Save &amp; Publish
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

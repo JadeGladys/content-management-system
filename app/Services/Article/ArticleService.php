@@ -204,6 +204,33 @@ class ArticleService
         }
     }
 
+    public function deleteArticle(Article $article, User $actor): void
+    {
+        try {
+            $articleId = $article->id;
+            $articleTitle = $article->title;
+
+            $article->delete();
+
+            Log::info('Article deleted.', [
+                'actor_id' => $actor->id,
+                'article_id' => $articleId,
+                'title' => $articleTitle,
+                'status' => 'success',
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('Article deletion failed.', [
+                'actor_id' => $actor->id,
+                'article_id' => $article->id,
+                'title' => $article->title,
+                'status' => 'failed',
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+    }
+
     public function canTransitionStatus(Article $article, string $targetStatus): bool
     {
         return match ($article->status) {

@@ -19,6 +19,9 @@ Route::middleware(['auth', 'cms.access'])->group(function () {
     Route::put('/admin/articles/{article}', [ArticleController::class, 'update'])
         ->name('articles.update');
 
+    Route::delete('/admin/articles/{article}', [ArticleController::class, 'destroy'])
+    ->name('articles.destroy');
+
     Route::put('/admin/articles/{article}/status', [ArticleController::class, 'updateStatus'])
         ->name('articles.status.update');
 });

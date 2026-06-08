@@ -197,6 +197,47 @@ class ArticleController extends Controller
         }
     }
 
+    public function destroy(Article $article, Request $request): RedirectResponse
+    {
+        $guardResponse = $this->ensureEditableArticle($article, $request->user());
+
+        if ($guardResponse) {
+            return $guardResponse;
+        }
+
+        try {
+            $this->articleService->deleteArticle($article, $request->user());
+
+            return redirect()
+                ->route('articles.index')
+                ->with('success', 'Article deleted successfully.');
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->route('articles.edit', $article)
+                ->with('error', 'Something went wrong while deleting the article. Please try again.');
+        }
+    }
+
+    protected function articleFormView(Article $article, array $pageData): View
+    {
+        return view('articles.update', [
+            'article' => $article,
+            'pageTitle' => $pageData['pageTitle'],
+            'pageHeading' => $pageData['pageHeading'],
+            'formAction' => $pageData['formAction'],
+            'formMethod' => $pageData['formMethod'],
+            'categories' => ArticleCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
+            'mediaLibrary' => Media::query()
+                ->latest()
+                ->get(['id', 'file_name', 'file_path', 'file_type', 'file_size']),
+            'availableTags' => Tag::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug']),
+        ]);
+    }
+
     protected function ensureEditableArticle(Article $article, $actor): ?RedirectResponse
     {
         if ($article->status !== 'draft') {

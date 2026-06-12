@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ asset('admin-assets/favicon.ico') }}">
     <title>{{ $title ?? 'Set Password' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="relative min-h-screen overflow-hidden bg-slate-100 text-slate-900">
     <div class="absolute inset-0">
-        <img src="/images/login-bg2.jpg" alt="" class="h-full w-full object-cover opacity-40">
+        <img src="{{ asset('admin-assets/images/login-bg.jpg') }}" alt="" class="h-full w-full object-cover opacity-40">
     </div>
 
     <main class="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">

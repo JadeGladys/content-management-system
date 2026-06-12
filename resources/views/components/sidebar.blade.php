@@ -61,7 +61,7 @@
             <div class="flex min-w-0 items-center gap-3">
                 <div class="shrink-0">
                     <img
-                        src="{{ asset('favicon.ico') }}"
+                        src="{{ asset('admin-assets/favicon.ico') }}"
                         alt="CMS favicon"
                         class="size-9 rounded-md object-contain"
                     >

@@ -49,6 +49,7 @@ class ArticleService
                     $innerQuery
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
+                        ->orWhere('type', 'ilike', "%{$search}%")
                         ->orWhere('meta_title', 'ilike', "%{$search}%")
                         ->orWhereHas('category', function ($categoryQuery) use ($search) {
                             $categoryQuery->where('name', 'ilike', "%{$search}%");
@@ -102,6 +103,8 @@ class ArticleService
                     : null,
                 'featured_image_id' => $featuredImageId,
                 'status' => $isPublishing ? 'published' : 'draft',
+                'type' => $data['type'] ?? 'article',
+                'is_featured' => (bool) ($data['is_featured'] ?? false),
 
                 'meta_title' => null,
                 'meta_description' => null,
@@ -198,6 +201,8 @@ class ArticleService
                     : null,
                 'featured_image_id' => $featuredImageId,
                 'status' => $isPublishing ? 'published' : $article->status,
+                'type' => $data['type'] ?? 'article',
+                'is_featured' => (bool) ($data['is_featured'] ?? false),
                 'author' => $article->author,
                 'updated_by' => $actor->id,
                 'published_at' => $isPublishing ? ($article->published_at ?? now()) : $article->published_at,

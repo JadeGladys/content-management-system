@@ -24,6 +24,8 @@ class UpdateArticleRequest extends FormRequest
             'title' => $title,
             'category' => $category,
             'slug' => Str::slug($slugSource) ?: 'article',
+            'type' => $this->input('type', 'article'),
+            'is_featured' => $this->boolean('is_featured'),
             'tag_ids' => $this->input('tag_ids', []),
             'new_tags' => $this->input('new_tags', []),
 
@@ -58,6 +60,8 @@ class UpdateArticleRequest extends FormRequest
             'content' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'featured_image_id' => ['nullable', 'exists:media,id'],
             'featured_image_upload' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+            'type' => ['required', 'string', 'max:50', Rule::in(['article', 'case_study', 'capability_sheet', 'whitepaper'])],
+            'is_featured' => ['boolean'],
 
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:320'],

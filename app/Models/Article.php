@@ -23,6 +23,8 @@ class Article extends Model
         'content',
         'featured_image_id',
         'status',
+        'type',
+        'is_featured',
         'meta_title',
         'meta_description',
         'meta_keywords',
@@ -42,6 +44,7 @@ class Article extends Model
         return [
             'content' => 'array',
             'no_index' => 'boolean',
+            'is_featured' => 'boolean',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
         ];

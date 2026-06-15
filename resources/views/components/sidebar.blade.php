@@ -68,8 +68,8 @@
                 </div>
 
                 <div data-sidebar-brand-copy class="min-w-0">
-                    <p class="text-sm font-semibold tracking-[0.16em] text-slate-100">CMS</p>
-                    <p class="text-xs text-slate-400">Admin workspace</p>
+                    <p class="text-xs font-semibold tracking-[0.16em] text-slate-100">CMS</p>
+                    <p class="text-[10px] text-slate-400">Admin workspace</p>
                 </div>
             </div>
         </div>
@@ -84,10 +84,10 @@
                             href="{{ $item['route'] }}"
                             title="{{ $item['label'] }}"
                             data-sidebar-link
-                            class="{{ $item['active'] ? 'bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'text-slate-400 hover:bg-white/5 hover:text-white' }} flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#635bff]"
+                            class="{{ $item['active'] ? 'bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'text-slate-400 hover:bg-white/5 hover:text-white' }} flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#635bff]"
                         >
                             <span data-sidebar-link-icon class="{{ $item['active'] ? 'text-[#635bff]' : 'text-slate-400' }} shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                     {!! $renderSidebarIcon($item['icon']) !!}
                                 </svg>
                             </span>
@@ -101,10 +101,10 @@
                 <summary
                     title="Tools"
                     data-sidebar-link
-                    class="flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white"
+                    class="flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white"
                 >
                     <span class="flex items-center">
-                        <span data-tools-trigger-label class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 group-hover:text-slate-400">Tools</span>
+                        <span data-tools-trigger-label class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 group-hover:text-slate-400">Tools</span>
                     </span>
 
                     <svg data-tools-trigger-chevron xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-500 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -118,10 +118,10 @@
                             type="button"
                             title="{{ $item['label'] }}"
                             data-sidebar-link
-                            class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-500 transition hover:bg-white/5 hover:text-slate-300"
+                            class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-500 transition hover:bg-white/5 hover:text-slate-300"
                         >
                             <span data-sidebar-link-icon class="shrink-0 text-slate-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                     {!! $renderSidebarIcon($item['icon']) !!}
                                 </svg>
                             </span>
@@ -139,10 +139,10 @@
                     type="submit"
                     title="Logout"
                     data-sidebar-link
-                    class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#635bff]"
+                    class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-xs font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#635bff]"
                 >
                     <span data-sidebar-link-icon class="shrink-0 text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
                         </svg>
                     </span>

@@ -39,6 +39,8 @@ return new class extends Migration
             $table->json('content')->nullable();
             $table->foreignUlid('featured_image_id')->nullable()->constrained('media')->nullOnDelete();
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $table->enum('type', ['article', 'case_study', 'capability_sheet', 'whitepaper'])->default('article');
+            $table->boolean('is_featured')->default(false);
 
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();

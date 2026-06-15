@@ -31,7 +31,7 @@
     data-options='@json($optionItems)'
     data-initial-value='@json($currentValue)'
 >
-    <label for="{{ $pickerId }}-trigger" class="mb-2 block text-sm font-medium text-slate-700">
+    <label for="{{ $pickerId }}-trigger" class="mb-2 block text-xs font-medium text-slate-700">
         {{ $label }}
         @if ($required)
             <span class="text-rose-600">*</span>
@@ -44,9 +44,9 @@
         type="button"
         id="{{ $pickerId }}-trigger"
         aria-expanded="false"
-        class="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-left text-sm text-slate-900 transition hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+        class="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-xs text-slate-900 transition hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
     >
-        <span id="{{ $pickerId }}-summary" class="block truncate text-sm font-medium text-slate-900">
+        <span id="{{ $pickerId }}-summary" class="block truncate text-xs font-medium text-slate-900">
             {{ filled($currentValue) ? $currentValue : $placeholder }}
         </span>
 
@@ -70,16 +70,16 @@
                     id="{{ $pickerId }}-search"
                     autocomplete="off"
                     placeholder="Search categories or add one"
-                    class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-11 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                    class="w-full rounded-xl border border-slate-300 bg-slate-50 px-11 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                 >
             </div>
         </div>
 
-        <div id="{{ $pickerId }}-options" class="max-h-56 space-y-1 overflow-y-auto px-3 py-3"></div>
+        <div id="{{ $pickerId }}-options" class="max-h-56 space-y-1 overflow-y-auto px-2 py-2"></div>
     </div>
 
     @error($name)
-        <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
     @enderror
 </div>
 
@@ -136,7 +136,7 @@
                     const isSelected = normalizeValue(option.name) === normalizeValue(selectedValue);
                     const optionButton = document.createElement('button');
                     optionButton.type = 'button';
-                    optionButton.className = `flex w-full items-center rounded-2xl px-4 py-3 text-left text-sm transition ${
+                    optionButton.className = `flex w-full items-center rounded-xl px-3 py-2 text-left text-xs transition ${
                         isSelected
                             ? 'bg-blue-600 text-white shadow-sm'
                             : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800'
@@ -159,7 +159,7 @@
                 if (normalizedQuery && querySlug && !exactMatchExists) {
                     const createButton = document.createElement('button');
                     createButton.type = 'button';
-                    createButton.className = 'mt-2 flex w-full items-center rounded-2xl border border-blue-200 bg-blue-50/80 px-4 py-3 text-left text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100';
+                    createButton.className = 'mt-2 flex w-full items-center rounded-xl border border-blue-200 bg-blue-50/80 px-4 py-3 text-left text-xs font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100';
                     createButton.textContent = `Use "${normalizedQuery}"`;
 
                     createButton.addEventListener('click', () => {
@@ -173,7 +173,7 @@
 
                 if (optionsContainer.children.length === 0) {
                     const emptyState = document.createElement('div');
-                    emptyState.className = 'rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-sm text-slate-500';
+                    emptyState.className = 'rounded-xl border border-dashed border-slate-200 px-4 py-5 text-xs text-slate-500';
                     emptyState.textContent = 'No matching categories found.';
                     optionsContainer.appendChild(emptyState);
                 }

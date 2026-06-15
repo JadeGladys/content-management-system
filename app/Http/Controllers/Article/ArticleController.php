@@ -256,6 +256,12 @@ class ArticleController extends Controller
             'pageHeading' => $pageData['pageHeading'],
             'formAction' => $pageData['formAction'],
             'formMethod' => $pageData['formMethod'],
+            'articleTypes' => [
+                'article' => 'Article',
+                'case_study' => 'Case Study',
+                'capability_sheet' => 'Capability Sheet',
+                'whitepaper' => 'Whitepaper',
+            ],
             'categories' => ArticleCategory::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),

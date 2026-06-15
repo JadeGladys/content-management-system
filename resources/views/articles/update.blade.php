@@ -1,5 +1,13 @@
 @extends('layouts.admin', ['title' => $pageTitle])
 
+@php
+    $editorValue = function ($value) {
+        return filled($value)
+            ? json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            : '';
+    };
+@endphp
+
 @section('content')
     @php
         $selectedFeaturedImage = old('featured_image_id')
@@ -28,10 +36,10 @@
             ->all();
     @endphp
 
-    <div class="my-6 px-4 md:px-8">
-        <div class="mx-auto max-w-7xl min-w-0">
-            <div class="mb-8">
-                <h1 class="font-serif text-[38px] font-bold leading-tight text-[#111827] max-w-full">{{ $pageHeading }}</h1>
+    <div class="my-4 px-4 md:px-6">
+        <div class="mx-auto max-w-5xl min-w-0">
+            <div class="mb-6">
+                <h1 class="font-serif text-[28px] font-bold leading-tight text-[#111827] max-w-full">{{ $pageHeading }}</h1>
             </div>
 
             @if ($article->exists && $article->status === 'draft')
@@ -47,17 +55,17 @@
                 </form>
             @endif
 
-            <form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" class="space-y-8">
+            <form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" class="space-y-2">
                 @csrf
                 @if (strtoupper($formMethod) !== 'POST')
                     @method($formMethod)
                 @endif
 
-                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-400 pb-5">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 pb-2">
                     <div class="flex items-center gap-6">
                         <button
                             type="button"
-                            class="article-content-tab border-b-2 border-slate-900 pb-2 text-sm font-semibold text-slate-900"
+                            class="article-content-tab border-b-1 border-slate-900 text-xs font-semibold text-slate-900"
                             data-content-target="main"
                         >
                             Main
@@ -65,7 +73,7 @@
 
                         <button
                             type="button"
-                            class="article-content-tab border-b-2 border-transparent pb-2 text-sm font-semibold text-slate-500 transition hover:text-slate-700"
+                            class="article-content-tab border-b-1 border-transparent text-xs font-semibold text-slate-500 transition hover:text-slate-700"
                             data-content-target="seo"
                         >
                             SEO
@@ -73,13 +81,26 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-end gap-3">
+                        @if ($article->exists)
+                            <a
+                                href="{{ route('articles.show', $article) }}"
+                                class="inline-flex items-center gap-1 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.437 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+
+                                Preview
+                            </a>
+                        @endif
                         @if ($article->exists && $article->status === 'draft')
                             <button
                                 type="submit"
                                 form="article-delete-form"
-                                class="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100"
+                                class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-5">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.11 0 0 0-7.5 0" />
                                 </svg>
                                 Delete
@@ -98,7 +119,7 @@
                                 <button
                                     type="submit"
                                     id="article-submit-primary"
-                                    class="inline-flex min-w-44 items-center justify-center bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                    class="inline-flex min-w-36 items-center justify-center bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
                                 >
                                     Save
                                 </button>
@@ -106,7 +127,7 @@
                                 <button
                                     type="button"
                                     id="article-submit-toggle"
-                                    class="inline-flex items-center justify-center border-l border-blue-500 bg-blue-600 px-4 py-3 text-white transition hover:bg-blue-700"
+                                    class="inline-flex items-center justify-center border-l border-blue-500 bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
                                     aria-expanded="false"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -121,7 +142,7 @@
                             >
                                 <button
                                     type="button"
-                                    class="article-submit-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                    class="article-submit-option flex w-full items-center justify-between px-4 py-3 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                                     data-submit-action="save"
                                     data-submit-label="Save"
                                 >
@@ -130,7 +151,7 @@
 
                                 <button
                                     type="button"
-                                    class="article-submit-option flex w-full items-center justify-between border-t border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                    class="article-submit-option flex w-full items-center justify-between border-t border-slate-200 px-4 py-3 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                                     data-submit-action="publish"
                                     data-submit-label="Save & Publish"
                                 >
@@ -141,14 +162,14 @@
                     </div>
                 </div>
 
-                <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-                    <div class="space-y-8">
-                        <div id="article-content-panel-main" class="space-y-8">
-                            <section class="pt-8">
-                                <div class="overflow-visible rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                    <div class="border-b border-slate-200 px-6 py-5">
-                                        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Cover photo</h2>
-                                        <p class="mt-1 text-sm leading-6 text-slate-500">
+                <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+                    <div class="space-y-6">
+                        <div id="article-content-panel-main" class="space-y-6">
+                            <section class="pt-6">
+                                <div class="overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-5 py-4">
+                                        <h2 class="text-lg font-semibold tracking-tight text-slate-900">Cover photo</h2>
+                                        <p class="mt-1 text-xs leading-4 text-slate-500">
                                             Upload a featured image for this article or browse uploaded assets later.
                                         </p>
                                     </div>
@@ -157,7 +178,7 @@
                                         <button
                                             type="button"
                                             id="openAssetBrowserModal"
-                                            class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l1.5 2H18.5A2.5 2.5 0 0 1 21 9.5v7A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z" />
@@ -167,9 +188,9 @@
 
                                         <label
                                             for="featured_image_upload"
-                                            class="flex min-h-16 flex-1 cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-slate-300 px-4 py-4 text-sm text-slate-600 transition hover:border-blue-400 hover:bg-blue-50/40"
+                                            class="flex min-h-10 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-2 py-2 text-xs text-slate-600 transition hover:border-blue-400 hover:bg-blue-50/40"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-6 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V6m0 0-3.5 3.5M12 6l3.5 3.5" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 16.5A3.5 3.5 0 0 0 16.5 13H16a5 5 0 1 0-9.8 1.5A3 3 0 0 0 7 20h10a3 3 0 0 0 3-3.5" />
                                             </svg>
@@ -189,7 +210,7 @@
                                         >
                                     </div>
 
-                                    <div class="p-6">
+                                    <div class="p-5">
                                         <input
                                             type="hidden"
                                             id="featured_image_id"
@@ -204,28 +225,28 @@
                                         >
 
                                         @error('featured_image_upload')
-                                            <p class="mb-4 text-sm text-rose-600">{{ $message }}</p>
+                                            <p class="mb-4 text-xs text-rose-600">{{ $message }}</p>
                                         @enderror
 
                                         @error('featured_image_id')
-                                            <p class="mb-4 text-sm text-rose-600">{{ $message }}</p>
+                                            <p class="mb-4 text-xs text-rose-600">{{ $message }}</p>
                                         @enderror
 
                                         <div
                                             id="featured-image-preview-card"
-                                            class="@if (! $selectedFeaturedImage) hidden @endif max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                                            class="@if (! $selectedFeaturedImage) hidden @endif max-w-xs overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
                                         >
                                             <img
                                                 id="featured-image-preview-tag"
                                                 src="{{ $selectedFeaturedImage?->public_url }}"
                                                 alt="Selected featured image preview"
-                                                class="h-44 w-full object-cover"
+                                                class="h-30 w-full object-cover"
                                             >
 
-                                            <div class="flex items-center justify-between gap-3 px-4 py-3">
+                                            <div class="flex items-center justify-between gap-3 px-3 py-2">
                                                 <p
                                                     id="featured-image-preview-name"
-                                                    class="truncate text-sm font-medium text-slate-700"
+                                                    class="truncate text-xs font-medium text-slate-700"
                                                 >{{ $selectedFeaturedImage?->file_name }}</p>
 
                                                 <button
@@ -240,7 +261,7 @@
 
                                         <div
                                             id="featured-image-empty-state"
-                                            class="@if ($selectedFeaturedImage) hidden @endif rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-sm text-slate-500"
+                                            class="@if ($selectedFeaturedImage) hidden @endif rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-xs text-slate-500"
                                         >
                                             No featured image selected yet.
                                         </div>
@@ -248,15 +269,15 @@
                                 </div>
                             </section>
 
-                            <section class="border-t border-slate-200 pt-8">
-                                <div class="overflow-visible rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                    <div class="border-b border-slate-200 px-6 py-5">
-                                        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Article Information</h2>
+                            <section class="border-t border-slate-200 pt-6">
+                                <div class="overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-5 py-4">
+                                        <h2 class="text-lg font-semibold tracking-tight text-slate-900">Article Information</h2>
                                     </div>
 
-                                    <div class="grid gap-5 p-6 md:grid-cols-2">
+                                    <div class="grid gap-4 p-5 md:grid-cols-2">
                                         <div class="md:col-span-2">
-                                            <label for="title" class="mb-2 block text-sm font-medium text-slate-700">
+                                            <label for="title" class="mb-2 block text-xs font-medium text-slate-700">
                                                 Title <span class="text-rose-600">*</span>
                                             </label>
                                             <input
@@ -264,10 +285,10 @@
                                                 id="title"
                                                 name="title"
                                                 value="{{ old('title', $article->title) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('title')
-                                                <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
 
@@ -284,54 +305,75 @@
                                             />
                                         </div>
 
+                                        <div>
+                                            <label for="type" class="mb-2 block text-xs font-medium text-slate-700">
+                                                Type
+                                            </label>
+
+                                            <select
+                                                id="type"
+                                                name="type"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 pr-12 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                            >
+                                                @foreach ($articleTypes as $value => $label)
+                                                    <option value="{{ $value }}" @selected(old('type', $article->type ?? 'article') === $value)>
+                                                        {{ $label }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+
+                                            @error('type')
+                                                <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
                                         <div class="md:col-span-2">
-                                            <label for="overview" class="mb-2 block text-sm font-medium text-slate-700">
+                                            <label for="overview" class="mb-2 block text-xs font-medium text-slate-700">
                                                 Overview
                                             </label>
                                             <textarea
                                                 id="overview"
                                                 name="overview"
                                                 rows="4"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >{{ old('overview', $article->overview) }}</textarea>
                                             @error('overview')
-                                                <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="border-t border-slate-200 pt-8">
-                                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                    <div class="border-b border-slate-200 px-6 py-5">
-                                        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Article Content</h2>
+                            <section class="border-t border-slate-200 pt-6">
+                                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-5 py-4">
+                                        <h2 class="text-lg font-semibold tracking-tight text-slate-900">Article Content</h2>
                                     </div>
 
-                                    <div class="p-6">
-                                        @include('articles.editor', [
-                                            'field' => 'content',
-                                            'label' => 'Content',
-                                            'editorId' => 'article-content-editor',
-                                            'toolbarId' => 'article-content-toolbar',
-                                            'value' => old('content', filled($article->content) ? json_encode($article->content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : ''),
-                                        ])
+                                    <div class="p-5">
+                                        <x-tiptap-editor
+                                            field="content"
+                                            label="Content"
+                                            :required="false"
+                                            :value="old('content', $editorValue($article->content))"
+                                        />
                                     </div>
                                 </div>
                             </section>
                         </div>
 
                         <div id="article-content-panel-seo" class="hidden space-y-8">
-                            <section class="border-t border-slate-200 pt-8">
-                                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                    <div class="border-b border-slate-200 px-6 py-5">
-                                        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Search Visibility</h2>
+                            <section class="border-slate-200 pt-6">
+                                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-5 py-4">
+                                        <h2 class="text-lg font-semibold tracking-tight text-slate-900">Search Visibility</h2>
                                     </div>
 
-                                    <div class="p-6">
-                                        <label class="flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                    <div class="p-5">
+                                        <label class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
                                             <div>
-                                                <p class="text-sm font-semibold text-slate-900">Hide from search engines</p>
+                                                <p class="text-xs font-semibold text-slate-900">Hide from search engines</p>
                                             </div>
 
                                             <input
@@ -339,19 +381,19 @@
                                                 name="no_index"
                                                 value="1"
                                                 @checked(old('no_index', $article->no_index))
-                                                class="mt-1 size-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                class="mt-1 size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                             >
                                         </label>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="border-t border-slate-200 pt-8">
-                                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
+                            <section class="border-t border-slate-200 pt-6">
+                                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
                                         <div>
-                                            <h2 class="text-xl font-semibold tracking-tight text-slate-900">Meta Data</h2>
-                                            <p class="mt-1 text-sm leading-6 text-slate-500">
+                                            <h2 class="text-lg font-semibold tracking-tight text-slate-900">Meta Data</h2>
+                                            <p class="mt-1 text-xs leading-4 text-slate-500">
                                                 Leave fields blank if you want the system defaults to be used.
                                             </p>
                                         </div>
@@ -359,115 +401,115 @@
                                         <button
                                             type="button"
                                             id="article-generate-seo"
-                                            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-blue-600 px-4 py-3 text-sm font-semibold text-slate-100 shadow-sm transition hover:bg-blue-700"
+                                            class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-blue-600 px-3 py-2 text-xs font-semibold text-slate-100 shadow-sm transition hover:bg-blue-700"
                                         >
                                             Generate SEO
                                         </button>
                                     </div>
 
-                                    <div class="space-y-5 p-6">
+                                    <div class="space-y-4 p-5">
                                         <div>
-                                            <label for="meta_title" class="mb-2 block text-sm font-medium text-slate-700">Meta title</label>
+                                            <label for="meta_title" class="mb-2 block text-xs font-medium text-slate-700">Meta title</label>
                                             <input
                                                 type="text"
                                                 id="meta_title"
                                                 name="meta_title"
                                                 value="{{ old('meta_title', $article->meta_title) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('meta_title')
-                                                <p data-error-field="meta_title" class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p data-error-field="meta_title" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
 
                                         <div>
-                                            <label for="meta_description" class="mb-2 block text-sm font-medium text-slate-700">Meta description</label>
+                                            <label for="meta_description" class="mb-2 block text-xs font-medium text-slate-700">Meta description</label>
                                             <textarea
                                                 id="meta_description"
                                                 name="meta_description"
                                                 rows="4"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >{{ old('meta_description', $article->meta_description) }}</textarea>
                                             @error('meta_description')
-                                                <p data-error-field="meta_description" class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p data-error-field="meta_description" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
 
                                         <div>
-                                            <label for="meta_keywords" class="mb-2 block text-sm font-medium text-slate-700">Meta keywords</label>
+                                            <label for="meta_keywords" class="mb-2 block text-xs font-medium text-slate-700">Meta keywords</label>
                                             <input
                                                 type="text"
                                                 id="meta_keywords"
                                                 name="meta_keywords"
                                                 value="{{ old('meta_keywords', $article->meta_keywords) }}"
                                                 placeholder="ai, business, productivity"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('meta_keywords')
-                                                <p data-error-field="meta_keywords" class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p data-error-field="meta_keywords" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
 
                                         <div>
-                                            <label for="canonical_url" class="mb-2 block text-sm font-medium text-slate-700">Canonical URL</label>
+                                            <label for="canonical_url" class="mb-2 block text-xs font-medium text-slate-700">Canonical URL</label>
                                             <input
                                                 type="url"
                                                 id="canonical_url"
                                                 name="canonical_url"
                                                 value="{{ old('canonical_url', $article->canonical_url) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
-                                            <p class="mt-2 text-xs leading-5 text-green-300">
+                                            <p class="mt-2 text-xs leading-5 text-blue-300">
                                                 Keep this blank until the final public website URL is confirmed, or set it manually if you already know it.
                                             </p>
                                             @error('canonical_url')
-                                                <p data-error-field="canonical_url" class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p data-error-field="canonical_url" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="border-t border-slate-200 pt-8">
-                                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                                    <div class="border-b border-slate-200 px-6 py-5">
-                                        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Social Sharing</h2>
-                                        <p class="mt-1 text-sm leading-6 text-slate-500">
+                            <section class="border-t border-slate-200 pt-6">
+                                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-5 py-4">
+                                        <h2 class="text-lg font-semibold tracking-tight text-slate-900">Social Sharing</h2>
+                                        <p class="mt-1 text-xs leading-4 text-slate-500">
                                             These values are used for Open Graph sharing metadata.
                                         </p>
                                     </div>
 
-                                    <div class="space-y-5 p-6">
+                                    <div class="space-y-4 p-5">
                                         <div>
-                                            <label for="og_title" class="mb-2 block text-sm font-medium text-slate-700">OG title</label>
+                                            <label for="og_title" class="mb-2 block text-xs font-medium text-slate-700">OG title</label>
                                             <input
                                                 type="text"
                                                 id="og_title"
                                                 name="og_title"
                                                 value="{{ old('og_title', $article->og_title) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('og_title')
-                                                <p data-error-field="og_title" class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p data-error-field="og_title" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
 
                                         <div>
-                                            <label for="og_description" class="mb-2 block text-sm font-medium text-slate-700">OG description</label>
+                                            <label for="og_description" class="mb-2 block text-xs font-medium text-slate-700">OG description</label>
                                             <textarea
                                                 id="og_description"
                                                 name="og_description"
                                                 rows="4"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >{{ old('og_description', $article->og_description) }}</textarea>
                                             @error('og_description')
-                                                <p data-error-field="og_description" class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                                <p data-error-field="og_description" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                             @enderror
                                         </div>
 
                                         <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                            <p class="text-sm font-semibold text-slate-900">Social preview image</p>
-                                            <p class="mt-1 text-sm text-slate-500">
+                                            <p class="text-xs font-semibold text-slate-900">Social preview image</p>
+                                            <p class="mt-1 text-xs text-slate-500">
                                                 This version automatically uses the featured image as the Open Graph image.
                                             </p>
                                         </div>
@@ -477,33 +519,33 @@
                         </div>
                     </div>
 
-                    <aside class="space-y-6 border-t border-slate-200 pt-8 lg:self-start lg:border-t-0 lg:pt-8">
-                        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-6">
-                            <div class="border-b border-slate-200 px-6 py-5">
+                    <aside class="space-y-5 border-t border-slate-200 pt-6 lg:self-start lg:border-t-0 lg:pt-6">
+                        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-6">
+                            <div class="border-b border-slate-200 px-5 py-4">
                                 <h2 class="text-lg font-semibold tracking-tight text-slate-900">Publishing Details</h2>
                             </div>
 
-                            <div class="space-y-5 p-6">
+                            <div class="space-y-4 p-5">
                                 <div>
-                                    <label for="slug" class="mb-2 block text-sm font-medium text-slate-700">Slug</label>
+                                    <label for="slug" class="mb-2 block text-xs font-medium text-slate-700">Slug</label>
                                     <input
                                         type="text"
                                         id="slug"
                                         name="slug"
                                         value="{{ old('slug', $article->slug) }}"
-                                        class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                        class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                     >
                                     @error('slug')
-                                        <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label class="mb-2 block text-sm font-medium text-slate-700">Tags</label>
+                                    <label class="mb-2 block text-xs font-medium text-slate-700">Tags</label>
 
                                     <div
                                         id="article-tag-picker"
-                                        class="relative rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-3"
+                                        class="relative rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-3"
                                         data-available-tags='@json($availableTagOptions)'
                                         data-selected-tag-ids='@json($selectedTagIds)'
                                         data-selected-new-tags='@json($selectedNewTags)'
@@ -516,13 +558,13 @@
                                                 type="button"
                                                 id="article-tags-trigger"
                                                 aria-expanded="false"
-                                                class="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-left shadow-sm transition hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-left shadow-sm transition hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
-                                                <span id="article-tags-summary" class="block truncate text-sm font-semibold text-slate-900">
+                                                <span id="article-tags-summary" class="block truncate text-xs font-semibold text-slate-900">
                                                     Tag picker
                                                 </span>
 
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0 text-slate-400 transition" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 text-slate-400 transition" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
                                                 </svg>
                                             </button>
@@ -542,7 +584,7 @@
                                                             id="article-tags-search"
                                                             autocomplete="off"
                                                             placeholder="Search tags or add a new one"
-                                                            class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-11 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                            class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-8 py-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                                                         >
                                                     </div>
                                                 </div>
@@ -555,19 +597,19 @@
                                         </div>
 
                                         @error('tag_ids')
-                                            <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                            <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                         @enderror
 
                                         @error('tag_ids.*')
-                                            <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                            <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                         @enderror
 
                                         @error('new_tags')
-                                            <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                            <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                         @enderror
 
                                         @error('new_tags.*')
-                                            <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
+                                            <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                                         @enderror
 
                                         <div
@@ -578,14 +620,22 @@
                                     </div>
                                 </div>
 
-                                <div class="border-t border-slate-200 pt-5">
-                                    <a
-                                        href="{{ route('articles.index') }}"
-                                        class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                <label class="flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                    <div>
+                                        <p class="text-xs font-semibold text-slate-900">Featured article</p>
+                                        <p class="mt-1 text-[10px] leading-5 text-slate-500">
+                                            Mark this article for featured sections on the public website.
+                                        </p>
+                                    </div>
+
+                                    <input
+                                        type="checkbox"
+                                        name="is_featured"
+                                        value="1"
+                                        @checked(old('is_featured', $article->is_featured))
+                                        class="mt-1 size-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                     >
-                                        Cancel
-                                    </a>
-                                </div>
+                                </label>
                             </div>
                         </div>
                     </aside>
@@ -780,7 +830,7 @@
 
                     if (selectedTagItems.length === 0) {
                         const emptyState = document.createElement('div');
-                        emptyState.className = 'rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500';
+                        emptyState.className = 'rounded-xl border border-dashed border-slate-200 bg-slate-50 px-2 py-3 text-xs text-slate-500';
                         emptyState.textContent = 'No tags selected yet.';
                         articleSelectedTags.appendChild(emptyState);
                         return;
@@ -794,14 +844,14 @@
                         textWrap.className = 'min-w-0';
 
                         const name = document.createElement('p');
-                        name.className = 'truncate text-sm font-medium text-slate-900';
+                        name.className = 'truncate text-xs font-medium text-slate-900';
                         name.textContent = tag.label;
 
                         textWrap.appendChild(name);
 
                         const removeButton = document.createElement('button');
                         removeButton.type = 'button';
-                        removeButton.className = 'inline-flex size-7 items-center justify-center rounded-full border border-slate-200 text-base font-medium leading-none text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600';
+                        removeButton.className = 'inline-flex size-5 items-center justify-center text-base font-medium leading-none text-slate-400 transition hover:text-rose-600';
                         removeButton.setAttribute('aria-label', `Remove ${tag.label}`);
                         removeButton.textContent = '×';
                         removeButton.addEventListener('click', () => {
@@ -823,7 +873,7 @@
                     filteredTags.forEach((tag) => {
                         const option = document.createElement('button');
                         option.type = 'button';
-                        option.className = `flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm transition ${
+                        option.className = `flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs transition ${
                             selectedTagIds.has(tag.id)
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800'
@@ -858,7 +908,7 @@
                     if (normalizedQuery && querySlug && !exactExistingMatch && !exactNewMatch) {
                         const createOption = document.createElement('button');
                         createOption.type = 'button';
-                        createOption.className = 'mt-2 flex w-full items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50/80 px-4 py-3 text-left text-sm text-blue-700 transition hover:border-blue-300 hover:bg-blue-100';
+                        createOption.className = 'mt-2 flex w-full items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50/80 px-4 py-3 text-left text-xs text-blue-700 transition hover:border-blue-300 hover:bg-blue-100';
 
                         const createText = document.createElement('span');
                         createText.className = 'truncate font-medium';
@@ -877,7 +927,7 @@
 
                     if (articleTagsOptions.children.length === 0) {
                         const emptyState = document.createElement('div');
-                        emptyState.className = 'rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-sm text-slate-500';
+                        emptyState.className = 'rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-xs text-slate-500';
                         emptyState.textContent = 'No matching tags found.';
                         articleTagsOptions.appendChild(emptyState);
                     }

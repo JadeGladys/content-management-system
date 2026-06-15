@@ -219,9 +219,26 @@
                                     </div>
 
                                     <div class="space-y-5 p-6">
-                                        @include('careers.editor', ['field' => 'about', 'label' => 'About', 'required' => true, 'value' => old('about', $editorValue($career->about))])
-                                        @include('careers.editor', ['field' => 'description', 'label' => 'Description', 'required' => false, 'value' => old('description', $editorValue($career->description))])
-                                        @include('careers.editor', ['field' => 'requirements', 'label' => 'Requirements', 'required' => false, 'value' => old('requirements', $editorValue($career->requirements))])
+                                        <x-tiptap-editor
+                                            field="about"
+                                            label="About"
+                                            :required="false"
+                                            :value="old('about', $editorValue($career->about))"
+                                        />
+
+                                        <x-tiptap-editor
+                                            field="description"
+                                            label="Description"
+                                            :required="false"
+                                            :value="old('description', $editorValue($career->description))"
+                                        />
+
+                                        <x-tiptap-editor
+                                            field="requirements"
+                                            label="Requirements"
+                                            :required="false"
+                                            :value="old('requirements', $editorValue($career->requirements))"
+                                        />
                                     </div>
                                 </div>
                             </section>

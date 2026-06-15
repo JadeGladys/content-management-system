@@ -1,9 +1,8 @@
-import { mountArticleEditor, mountCareerEditors } from './article-editor'
+import { mountTiptapEditors } from './tiptap-editor'
 import ApexCharts from 'apexcharts';
 
 window.ApexCharts = ApexCharts;
 
 document.addEventListener('DOMContentLoaded', () => {
-    mountArticleEditor()
-    mountCareerEditors()
+    mountTiptapEditors()
 })

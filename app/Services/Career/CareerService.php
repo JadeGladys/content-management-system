@@ -45,11 +45,13 @@ class CareerService
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
                         ->orWhere('meta_title', 'ilike', "%{$search}%")
+                        ->orWhere('type', 'ilike', "%{$search}%")
+                        ->orWhere('employment_type', 'ilike', "%{$search}%")
+                        ->orWhere('work_mode', 'ilike', "%{$search}%")
+                        ->orWhere('location', 'ilike', "%{$search}%")
                         ->orWhereHas('category', function ($categoryQuery) use ($search) {
                             $categoryQuery->where('name', 'ilike', "%{$search}%");
                         })
-                        ->orWhere('department', 'ilike', "%{$search}%")
-                        ->orWhere('location', 'ilike', "%{$search}%")
                         ->orWhereHas('createdBy', function ($createdByQuery) use ($search) {
                             $createdByQuery->where('name', 'ilike', "%{$search}%");
                         });
@@ -62,6 +64,7 @@ class CareerService
 
     public function createCareer(array $data, User $actor): Career
     {
+        $this->ensureCanPublish($data);
         try {
             $action = $data['action'] ?? 'save';
             $isPublishing = $action === 'publish';
@@ -70,11 +73,14 @@ class CareerService
             $career = Career::create([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
+                'type' => $data['type'] ?? null,
                 'career_category_id' => $this->resolveCategoryId($data['category'], $actor),
+                'employment_type' => $data['employment_type'] ?? null,
+                'work_mode' => $data['work_mode'] ?? null,
+                'application_url' => $data['application_url'] ?? null,
                 'location' => $data['location'] ?? null,
-                'department' => $data['department'],
-                'about' => filled($data['about'] ?? null)
-                    ? json_decode($data['about'], true)
+                'overview' => filled($data['overview'] ?? null)
+                    ? json_decode($data['overview'], true)
                     : null,
                 'description' => filled($data['description'] ?? null)
                     ? json_decode($data['description'], true)
@@ -138,6 +144,7 @@ class CareerService
 
     public function updateCareer(array $data, Career $career, User $actor): Career
     {
+        $this->ensureCanPublish($data);
         try {
             $action = $data['action'] ?? 'save';
             $isPublishing = $action === 'publish';
@@ -146,11 +153,14 @@ class CareerService
             $career->update([
                 'title' => $data['title'],
                 'slug' => $data['slug'],
+                'type' => $data['type'] ?? null,
                 'career_category_id' => $this->resolveCategoryId($data['category'], $actor),
+                'employment_type' => $data['employment_type'] ?? null,
+                'work_mode' => $data['work_mode'] ?? null,
+                'application_url' => $data['application_url'] ?? null,
                 'location' => $data['location'] ?? null,
-                'department' => $data['department'],
-                'about' => filled($data['about'] ?? null)
-                    ? json_decode($data['about'], true)
+                'overview' => filled($data['overview'] ?? null)
+                    ? json_decode($data['overview'], true)
                     : null,
                 'description' => filled($data['description'] ?? null)
                     ? json_decode($data['description'], true)
@@ -280,5 +290,22 @@ class CareerService
         );
 
         return $category->id;
+    }
+
+    private function ensureCanPublish(array $data): void
+    {
+        if (($data['action'] ?? null) !== 'publish') {
+            return;
+        }
+
+        if (!empty($data['deadline']) && now()->greaterThan($data['deadline'])) {
+            Log::warning('Career publish blocked due to deadline', [
+                'career_id' => $career->id ?? null,
+                'deadline' => $career->deadline ?? null,
+            ]);
+            throw new \DomainException(
+                'Cannot publish a career with an expired deadline.'
+            );
+        }
     }
 }

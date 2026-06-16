@@ -80,7 +80,7 @@ class CareerController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Something went wrong while creating the career. Please try again.');
+                ->with('error', $exception->getMessage());
         }
     }
 
@@ -118,7 +118,7 @@ class CareerController extends Controller
             'career' => $career,
             'pageTitle' => $career->title,
             'pageHeading' => $career->title,
-            'renderedAbout' => $this->careerContentRenderer->render($career->about),
+            'renderedOverview' => $this->careerContentRenderer->render($career->overview),
             'renderedDescription' => $this->careerContentRenderer->render($career->description),
             'renderedRequirements' => $this->careerContentRenderer->render($career->requirements),
         ]);
@@ -163,7 +163,7 @@ class CareerController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Something went wrong while updating the career. Please try again.');
+                ->with('error', $exception->getMessage());
         }
     }
 
@@ -212,7 +212,7 @@ class CareerController extends Controller
         } catch (\Throwable $exception) {
             return redirect()
                 ->route('careers.show', $career)
-                ->with('error', 'Something went wrong while changing the career status. Please try again.');
+                ->with('error', $exception->getMessage());
         }
     }
 
@@ -233,7 +233,7 @@ class CareerController extends Controller
         } catch (\Throwable $exception) {
             return redirect()
                 ->route('careers.edit', $career)
-                ->with('error', 'Something went wrong while deleting the career. Please try again.');
+                ->with('error', $exception->getMessage());
         }
     }
 
@@ -309,6 +309,25 @@ class CareerController extends Controller
             'categories' => CareerCategory::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),
+            'careerTypes' => [
+                'security_officer' => 'Security Officer',
+                'corporate' => 'Corporate',
+                'technology' => 'Technology',
+            ],
+
+            'employmentTypes' => [
+                'full_time' => 'Full-time',
+                'part_time' => 'Part-time',
+                'contract' => 'Contract',
+                'internship' => 'Internship',
+                'temporary' => 'Temporary',
+            ],
+
+            'workModes' => [
+                'onsite' => 'On-site',
+                'remote' => 'Remote',
+                'hybrid' => 'Hybrid',
+            ],
             'locationSuggestions' => Career::query()
                 ->whereNotNull('location')
                 ->select('location')

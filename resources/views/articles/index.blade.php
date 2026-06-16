@@ -97,19 +97,19 @@
                 <div class="max-w-full overflow-x-auto">
                     <table class="min-w-[950px] w-full table-fixed">
                         <colgroup>
-                            <col class="w-[4%]">
-                            <col class="w-[8%]">
-                            <col class="w-[6%]">
-                            <col class="w-[8%]">
-                            <col class="w-[6%]">
-                            <col class="w-[6%]">
-                            <col class="w-[6%]">
-                            <col class="w-[6%]">
+                            <col class="w-[3.5rem]">
+                            <col class="w-[20%]">
+                            <col class="w-[16%]">
+                            <col class="w-[14%]">
+                            <col class="w-[14%]">
+                            <col class="w-[12%]">
+                            <col class="w-[12%]">
+                            <col class="w-[12%]">
                         </colgroup>
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
                             <tr>
-                                <th scope="col" class="w-6 py-4 pl-3">
-                                    <label class="group inline-block">
+                                <th scope="col" class="px-4 py-4 text-center">
+                                    <label class="group inline-flex items-center justify-center">
                                         <input type="checkbox" class="sr-only" id="master-checkbox" />
                                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white group-has-[input:checked]:border-blue-600 group-has-[input:checked]:bg-blue-600 group-focus-within:ring-2 group-focus-within:ring-blue-500" aria-hidden="true">
                                             <svg class="size-3.5 text-white opacity-0 group-has-[input:checked]:opacity-100" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2">
@@ -133,8 +133,8 @@
                         <tbody class="divide-y divide-slate-200 text-[13px]">
                             @forelse ($articles as $listedArticle)
                                 <tr class="transition hover:bg-slate-50/80 has-[:checked]:bg-blue-50/50">
-                                    <td class="w-8 py-5 pl-4 align-middle">
-                                        <label class="group inline-block">
+                                    <td class="px-4 py-5 text-center">
+                                        <label class="group inline-flex items-center justify-center">
                                             <input type="checkbox" class="sr-only row-checkbox" />
                                             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white group-has-[input:checked]:border-blue-600 group-has-[input:checked]:bg-blue-600 group-focus-within:ring-2 group-focus-within:ring-blue-500" aria-hidden="true">
                                                 <svg class="size-3.5 text-white opacity-0 group-has-[input:checked]:opacity-100" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2">
@@ -214,7 +214,7 @@
                                             @else
                                                 <a
                                                     href="{{ route('articles.show', $listedArticle) }}"
-                                                    class="inline-flex items-center gap-1 rounded-2xl border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
+                                                    class="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="size-3.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.437 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z" />

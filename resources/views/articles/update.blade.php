@@ -307,20 +307,29 @@
 
                                         <div>
                                             <label for="type" class="mb-2 block text-xs font-medium text-slate-700">
-                                                Type
+                                                Type <span class="text-rose-600">*</span>
                                             </label>
+                                            <div class="relative">
+                                                <select
+                                                    id="type"
+                                                    name="type"
+                                                    class="w-full appearance-none rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                >
+                                                    <option value="">Select type</option>
 
-                                            <select
-                                                id="type"
-                                                name="type"
-                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 pr-12 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                                            >
-                                                @foreach ($articleTypes as $value => $label)
-                                                    <option value="{{ $value }}" @selected(old('type', $article->type ?? 'article') === $value)>
-                                                        {{ $label }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                                    @foreach ($articleTypes as $value => $label)
+                                                        <option value="{{ $value }}" @selected(old('type', $article->type ?? 'article') === $value)>
+                                                            {{ $label }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                <div class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                                                        <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            </div>
 
                                             @error('type')
                                                 <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -329,7 +338,7 @@
 
                                         <div class="md:col-span-2">
                                             <label for="overview" class="mb-2 block text-xs font-medium text-slate-700">
-                                                Overview
+                                                Overview <span class="text-rose-600">*</span>
                                             </label>
                                             <textarea
                                                 id="overview"
@@ -353,9 +362,9 @@
 
                                     <div class="p-5">
                                         <x-tiptap-editor
-                                            field="content"
+                                            field="content" 
                                             label="Content"
-                                            :required="false"
+                                            :required="True"
                                             :value="old('content', $editorValue($article->content))"
                                         />
                                     </div>
@@ -415,7 +424,7 @@
                                                 id="meta_title"
                                                 name="meta_title"
                                                 value="{{ old('meta_title', $article->meta_title) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('meta_title')
                                                 <p data-error-field="meta_title" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -428,7 +437,7 @@
                                                 id="meta_description"
                                                 name="meta_description"
                                                 rows="4"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >{{ old('meta_description', $article->meta_description) }}</textarea>
                                             @error('meta_description')
                                                 <p data-error-field="meta_description" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -443,7 +452,7 @@
                                                 name="meta_keywords"
                                                 value="{{ old('meta_keywords', $article->meta_keywords) }}"
                                                 placeholder="ai, business, productivity"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('meta_keywords')
                                                 <p data-error-field="meta_keywords" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -457,7 +466,7 @@
                                                 id="canonical_url"
                                                 name="canonical_url"
                                                 value="{{ old('canonical_url', $article->canonical_url) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             <p class="mt-2 text-xs leading-5 text-blue-300">
                                                 Keep this blank until the final public website URL is confirmed, or set it manually if you already know it.
@@ -487,7 +496,7 @@
                                                 id="og_title"
                                                 name="og_title"
                                                 value="{{ old('og_title', $article->og_title) }}"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >
                                             @error('og_title')
                                                 <p data-error-field="og_title" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -500,7 +509,7 @@
                                                 id="og_description"
                                                 name="og_description"
                                                 rows="4"
-                                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                             >{{ old('og_description', $article->og_description) }}</textarea>
                                             @error('og_description')
                                                 <p data-error-field="og_description" class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -533,7 +542,7 @@
                                         id="slug"
                                         name="slug"
                                         value="{{ old('slug', $article->slug) }}"
-                                        class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                                     >
                                     @error('slug')
                                         <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
@@ -584,7 +593,7 @@
                                                             id="article-tags-search"
                                                             autocomplete="off"
                                                             placeholder="Search tags or add a new one"
-                                                            class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-8 py-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-10 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                                                         >
                                                     </div>
                                                 </div>

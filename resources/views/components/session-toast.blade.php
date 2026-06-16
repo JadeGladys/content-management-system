@@ -68,7 +68,7 @@
                 class="flash-toast pointer-events-auto overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-[0_14px_35px_-18px_rgba(15,23,42,0.3)]"
                 data-toast
             >
-                <div class="flex items-start gap-3 p-4">
+                <div class="flex items-center gap-3 p-4">
                     <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-400 text-amber-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008Zm9-3.758a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z" />

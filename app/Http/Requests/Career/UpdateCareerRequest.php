@@ -23,8 +23,9 @@ class UpdateCareerRequest extends FormRequest
         $this->merge([
             'title' => $title,
             'category' => $category,
-            'department' => trim((string) $this->input('department', '')),
             'slug' => Str::slug($slugSource) ?: 'career',
+            'application_url' => trim((string) $this->input('application_url', '')) ?: null,
+            'location' => trim((string) $this->input('location', '')) ?: null,
 
             'meta_title' => trim((string) $this->input('meta_title', '')) ?: null,
             'meta_description' => trim((string) $this->input('meta_description', '')) ?: null,
@@ -44,12 +45,15 @@ class UpdateCareerRequest extends FormRequest
 
         return [
             'action' => ['required', Rule::in(['save', 'publish', 'generate_seo'])],
-            'title' => ['required', 'string', 'max:255', Rule::unique('careers', 'title')->ignore($careerId)],
+            'title' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:255'],
-            'department' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('careers', 'slug')->ignore($careerId)],
+            'type' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'security_officer', 'corporate', 'technology', ])],
+            'employment_type' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'full_time', 'part_time', 'contract', 'internship', 'temporary', ])],
+            'work_mode' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'onsite', 'remote', 'hybrid', ])],
+            'application_url' => [Rule::requiredIf($publishing), 'nullable', 'url', 'max:2048'],
             'location' => [Rule::requiredIf($publishing), 'nullable', 'string', 'max:255'],
-            'about' => [Rule::requiredIf($publishing), 'nullable', 'json'],
+            'overview' => ['nullable', 'json'],
             'description' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'requirements' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'deadline' => [Rule::requiredIf($publishing), 'nullable', 'date'],

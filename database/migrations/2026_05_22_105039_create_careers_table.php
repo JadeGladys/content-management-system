@@ -23,12 +23,15 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('title');
             $table->string('slug');
+            $table->enum('type', [ 'security_officer', 'corporate', 'technology', ])->nullable();
             $table->foreignUlid('career_category_id')->constrained('career_categories');
             $table->string('location')->nullable();
-            $table->string('department');
-            $table->json('about')->nullable();
+            $table->enum('employment_type', [ 'full_time', 'part_time', 'contract', 'internship', 'temporary', ])->nullable();
+            $table->enum('work_mode', [ 'onsite', 'remote', 'hybrid', ])->nullable();
+            $table->json('overview')->nullable();
             $table->json('description')->nullable();
             $table->json('requirements')->nullable();
+            $table->string('application_url')->nullable();
             $table->dateTime('deadline')->nullable();
             $table->enum('status', ['draft', 'published', 'closed'])->default('draft');
 
@@ -46,7 +49,6 @@ return new class extends Migration
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();
 
-            $table->unique('title');
             $table->unique('slug');
         });
     }

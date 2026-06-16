@@ -17,12 +17,15 @@ class Career extends Model
     protected $fillable = [
         'title',
         'slug',
+        'type',
         'career_category_id',
         'location',
-        'department',
-        'about',
+        'employment_type',
+        'work_mode',
+        'overview',
         'description',
         'requirements',
+        'application_url',
         'deadline',
         'status',
         'meta_title',
@@ -41,7 +44,7 @@ class Career extends Model
     protected function casts(): array
     {
         return [
-            'about' => 'array',
+            'overview' => 'array',
             'description' => 'array',
             'requirements' => 'array',
             'deadline' => 'datetime',

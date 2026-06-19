@@ -24,14 +24,94 @@ class ArticleController extends Controller
     ) {
     }
 
+    protected const FILTER_FIELD_LABELS = [
+        'category' => 'Category',
+        'type' => 'Type',
+        'status' => 'Status',
+    ];
+
+    protected const ARTICLE_TYPES = [
+        'article' => 'Article',
+        'case_study' => 'Case Study',
+        'capability_sheet' => 'Capability Sheet',
+        'whitepaper' => 'Whitepaper',
+    ];
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
 
+        $filterKeys = array_keys(self::FILTER_FIELD_LABELS);
+        $filters = collect($filterKeys)
+            ->mapWithKeys(fn ($key) => [
+                $key => collect((array) $request->input($key, []))
+                    ->filter()
+                    ->values()
+                    ->all(),
+            ])
+            ->all();
+        
+        $hasActiveFilters = collect($filters)->contains(fn ($values) => ! empty($values));
+
+        $categories = ArticleCategory::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        $filterOptions = [
+            'category' => $categories
+                ->map(fn ($category) => ['value' => $category->slug, 'label' => $category->name])
+                ->all(),
+            'type' => $this->mapOptions(self::ARTICLE_TYPES),
+            'status' => $this->distinctColumnOptions('status'),
+        ];
+
+        $filterFields = collect(self::FILTER_FIELD_LABELS)
+            ->map(fn ($label, $key) => [
+                'key' => $key,
+                'label' => $label,
+                'placeholder' => "Select {$label}",
+                'options' => $filterOptions[$key],
+                'selected' => $filters[$key] ?? [],
+            ])
+            ->values()
+            ->all();
+
         return view('articles.index', [
-            'articles' => $this->articleService->getPaginatedArticles($search, $request->user()),
+            'articles' => $this->articleService->getPaginatedArticles($search, $filters, $request->user()),
             'search' => $search,
+            'filters' => $filters,
+            'hasActiveFilters' => $hasActiveFilters,
+            'filterFields' => $filterFields,
+            'categories' => $categories,
+            'searchSuggestions' => collect($this->distinctColumnOptions('title'))->pluck('value')
+                ->merge(collect($this->distinctColumnOptions('slug'))->pluck('value'))
+                ->merge($categories->pluck('name'))
+                ->merge(array_values(self::ARTICLE_TYPES))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
         ]);
+    }
+
+    protected function distinctColumnOptions(string $column): array
+    {
+        return Article::query()
+            ->whereNotNull($column)
+            ->select($column)
+            ->distinct()
+            ->orderBy($column)
+            ->pluck($column)
+            ->map(fn ($value) => ['value' => $value, 'label' => $value])
+            ->all();
+    }
+
+    protected function mapOptions(array $options): array
+    {
+        return collect($options)
+            ->map(fn ($label, $value) => ['value' => $value, 'label' => $label])
+            ->values()
+            ->all();
     }
 
     public function create(Request $request): View
@@ -248,20 +328,11 @@ class ArticleController extends Controller
         }
     }
 
-    protected function articleFormView(Article $article, array $pageData): View
+    protected function articleFormView(Article $article, array $pageConfig): View
     {
-        return view('articles.update', [
+        return view('articles.update', array_merge($pageConfig,[
             'article' => $article,
-            'pageTitle' => $pageData['pageTitle'],
-            'pageHeading' => $pageData['pageHeading'],
-            'formAction' => $pageData['formAction'],
-            'formMethod' => $pageData['formMethod'],
-            'articleTypes' => [
-                'article' => 'Article',
-                'case_study' => 'Case Study',
-                'capability_sheet' => 'Capability Sheet',
-                'whitepaper' => 'Whitepaper',
-            ],
+            'articleTypes' => self::ARTICLE_TYPES,
             'categories' => ArticleCategory::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),
@@ -271,7 +342,7 @@ class ArticleController extends Controller
             'availableTags' => Tag::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),
-        ]);
+        ]));
     }
 
     protected function ensureEditableArticle(Article $article, $actor): ?RedirectResponse

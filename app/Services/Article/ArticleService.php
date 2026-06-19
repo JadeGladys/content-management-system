@@ -22,9 +22,16 @@ class ArticleService
     ) {
     }
 
-    public function getPaginatedArticles(?string $search, User $actor): LengthAwarePaginator
+    protected const FILTERABLE_COLUMNS = [
+        'type',
+        'status',
+    ];
+
+    public function getPaginatedArticles(?string $search, array $filters, User $actor): LengthAwarePaginator
     {
-        return Article::query()
+        $filters = $this->normalizeFilters($filters);
+
+        $query = Article::query()
             ->with([
                 'authorUser:id,name',
                 'category:id,name,slug',
@@ -61,10 +68,33 @@ class ArticleService
                             $authorQuery->where('name', 'ilike', "%{$search}%");
                         });
                 });
-            })
+            });
+        
+        foreach (self::FILTERABLE_COLUMNS as $column) {
+            if (! empty($filters[$column])) {
+                $query->whereIn($column, $filters[$column]);
+            }
+        }
+
+        if (! empty($filters['category'])) {
+            $query->whereHas('category', function ($categoryQuery) use ($filters) {
+                $categoryQuery->whereIn('slug', $filters['category']);
+            });
+        }
+
+        return $query
             ->latest('updated_at')
             ->paginate(8)
             ->withQueryString();
+    }
+
+    protected function normalizeFilters(array $filters): array
+    {
+        return collect($filters)
+            ->mapWithKeys(fn ($values, $key) => [
+                $key => collect((array) $values)->filter()->values()->all(),
+            ])
+            ->all();
     }
 
     public function createArticle(array $data, User $actor, ?UploadedFile $featuredImageUpload = null): array

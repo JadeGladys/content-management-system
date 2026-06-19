@@ -23,7 +23,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('title');
             $table->string('slug');
-            $table->enum('type', [ 'security_officer', 'corporate', 'technology', ])->nullable();
+            $table->enum('type', [ 'security', 'corporate', 'technology', ])->nullable();
             $table->foreignUlid('career_category_id')->constrained('career_categories');
             $table->string('location')->nullable();
             $table->enum('employment_type', [ 'full_time', 'part_time', 'contract', 'internship', 'temporary', ])->nullable();

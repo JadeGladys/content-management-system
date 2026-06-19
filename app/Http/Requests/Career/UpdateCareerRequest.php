@@ -48,7 +48,7 @@ class UpdateCareerRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('careers', 'slug')->ignore($careerId)],
-            'type' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'security_officer', 'corporate', 'technology', ])],
+            'type' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'security', 'corporate', 'technology', ])],
             'employment_type' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'full_time', 'part_time', 'contract', 'internship', 'temporary', ])],
             'work_mode' => [Rule::requiredIf($publishing), 'nullable', 'string', Rule::in([ 'onsite', 'remote', 'hybrid', ])],
             'application_url' => [Rule::requiredIf($publishing), 'nullable', 'url', 'max:2048'],
@@ -56,7 +56,7 @@ class UpdateCareerRequest extends FormRequest
             'overview' => ['nullable', 'json'],
             'description' => [Rule::requiredIf($publishing), 'nullable', 'json'],
             'requirements' => [Rule::requiredIf($publishing), 'nullable', 'json'],
-            'deadline' => [Rule::requiredIf($publishing), 'nullable', 'date'],
+            'deadline' => ['nullable', 'date'],
 
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:320'],
@@ -66,5 +66,23 @@ class UpdateCareerRequest extends FormRequest
             'og_description' => ['nullable', 'string', 'max:320'],
             'no_index' => ['nullable', 'boolean'],
         ];
+    }
+
+    protected function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+
+            if (
+                $this->input('action') === 'publish'
+                && filled($this->deadline)
+                && now()->greaterThan($this->deadline)
+            ) {
+                $validator->errors()->add(
+                    'deadline',
+                    'Cannot publish a career with an expired deadline.'
+                );
+            }
+
+        });
     }
 }

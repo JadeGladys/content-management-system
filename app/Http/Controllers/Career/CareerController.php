@@ -22,17 +22,113 @@ class CareerController extends Controller
     ) {
     }
 
+    protected const FILTER_FIELD_LABELS = [
+        'category' => 'Category',
+        'type' => 'Type',
+        'location' => 'Location',
+        'employment_type' => 'Employment type',
+        'work_mode' => 'Work mode',
+    ];
+
+    protected const CAREER_TYPES = [
+        'security' => 'Security',
+        'corporate' => 'Corporate',
+        'technology' => 'Technology',
+    ];
+
+    protected const EMPLOYMENT_TYPES = [
+        'full_time' => 'Full-time',
+        'part_time' => 'Part-time',
+        'contract' => 'Contract',
+        'internship' => 'Internship',
+        'temporary' => 'Temporary',
+    ];
+
+    protected const WORK_MODES = [
+        'onsite' => 'On-site',
+        'remote' => 'Remote',
+        'hybrid' => 'Hybrid',
+    ];
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
 
+        $filterKeys = array_keys(self::FILTER_FIELD_LABELS);
+        $filters = collect($filterKeys)
+            ->mapWithKeys(fn ($key) => [
+                $key => collect((array) $request->input($key, []))
+                    ->filter()
+                    ->values()
+                    ->all(),
+            ])
+            ->all();
+
+        $hasActiveFilters = collect($filters)->contains(fn ($values) => ! empty($values));
+
+        $categories = CareerCategory::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        $filterOptions = [
+            'category' => $categories
+                ->map(fn ($category) => ['value' => $category->slug, 'label' => $category->name])
+                ->all(),
+            'type' => $this->mapOptions(self::CAREER_TYPES),
+            'location' => $this->distinctColumnOptions('location'),
+            'employment_type' => $this->mapOptions(self::EMPLOYMENT_TYPES),
+            'work_mode' => $this->mapOptions(self::WORK_MODES),
+        ];
+
+        $filterFields = collect(self::FILTER_FIELD_LABELS)
+            ->map(fn ($label, $key) => [
+                'key' => $key,
+                'label' => $label,
+                'placeholder' => "Select {$label}",
+                'options' => $filterOptions[$key],
+                'selected' => $filters[$key] ?? [],
+            ])
+            ->values()
+            ->all();
+
         return view('careers.index', [
-            'careers' => $this->careerService->getPaginatedCareers($search, $request->user()),
+            'careers' => $this->careerService->getPaginatedCareers($search, $filters, $request->user()),
             'search' => $search,
-            'categories' => CareerCategory::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug']),
+            'filters' => $filters,
+            'hasActiveFilters' => $hasActiveFilters,
+            'filterFields' => $filterFields,
+            'categories' => $categories,
+            'searchSuggestions' => collect($this->distinctColumnOptions('title'))->pluck('value')
+                ->merge(collect($this->distinctColumnOptions('slug'))->pluck('value'))
+                ->merge($categories->pluck('name'))
+                ->merge(array_values(self::CAREER_TYPES))
+                ->merge(array_values(self::EMPLOYMENT_TYPES))
+                ->merge(array_values(self::WORK_MODES))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
         ]);
+    }
+
+    protected function distinctColumnOptions(string $column): array
+    {
+        return Career::query()
+            ->whereNotNull($column)
+            ->select($column)
+            ->distinct()
+            ->orderBy($column)
+            ->pluck($column)
+            ->map(fn ($value) => ['value' => $value, 'label' => $value])
+            ->all();
+    }
+
+    protected function mapOptions(array $options): array
+    {
+        return collect($options)
+            ->map(fn ($label, $value) => ['value' => $value, 'label' => $label])
+            ->values()
+            ->all();
     }
 
     public function create(Request $request): View
@@ -309,25 +405,9 @@ class CareerController extends Controller
             'categories' => CareerCategory::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),
-            'careerTypes' => [
-                'security' => 'Security',
-                'corporate' => 'Corporate',
-                'technology' => 'Technology',
-            ],
-
-            'employmentTypes' => [
-                'full_time' => 'Full-time',
-                'part_time' => 'Part-time',
-                'contract' => 'Contract',
-                'internship' => 'Internship',
-                'temporary' => 'Temporary',
-            ],
-
-            'workModes' => [
-                'onsite' => 'On-site',
-                'remote' => 'Remote',
-                'hybrid' => 'Hybrid',
-            ],
+            'careerTypes' => self::CAREER_TYPES,
+            'employmentTypes' => self::EMPLOYMENT_TYPES,
+            'workModes' => self::WORK_MODES,
             'locationSuggestions' => Career::query()
                 ->whereNotNull('location')
                 ->select('location')

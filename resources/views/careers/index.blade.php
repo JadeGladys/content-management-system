@@ -45,7 +45,15 @@
                             value="{{ $search }}"
                             placeholder="Search..."
                             class="w-full text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                            list="career-search-suggestions"
+                            autocomplete="off"
                         />
+
+                        <datalist id="career-search-suggestions">
+                            @foreach ($searchSuggestions as $suggestion)
+                                <option value="{{ $suggestion }}"></option>
+                            @endforeach
+                        </datalist>
 
                         @if ($search)
                             <button
@@ -66,12 +74,18 @@
                 <div class="ml-auto flex flex-wrap gap-3">
                     <button
                         type="button"
-                        class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        id="openCareerFilterPanel"
+                        class="{{ $hasActiveFilters ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50' }} flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 64 64" aria-hidden="true">
                             <path d="M26.55 61.295a2.18 2.18 0 0 1-2.18-2.18v-20.96L4.161 15.928A6.115 6.115 0 0 1 8.685 5.705h46.63a6.115 6.115 0 0 1 4.524 10.224L39.63 38.154v12.241a2.18 2.18 0 0 1-.817 1.7l-10.9 8.72a2.18 2.18 0 0 1-1.363.48M8.685 10.065a1.755 1.755 0 0 0-1.297 2.932l20.775 22.89a2.18 2.18 0 0 1 .567 1.428v17.266l6.54-5.276v-11.99a2.18 2.18 0 0 1 .567-1.472l20.775-22.89a1.755 1.755 0 0 0-1.297-2.888z" />
                         </svg>
                         Filter
+                        @if ($hasActiveFilters)
+                            <span class="{{ $hasActiveFilters ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700' }} inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold">
+                                {{ collect($filters)->flatten()->count() }}
+                            </span>
+                        @endif
                     </button>
 
                     <button
@@ -294,6 +308,13 @@
             </div>
         </div>
     </div>
+    <x-filter-panel
+        panel-id="careerFilterPanel"
+        open-button-id="openCareerFilterPanel"
+        :action="route('careers.index')"
+        :search="$search"
+        :fields="$filterFields"
+    />
 @endsection
 
 @push('scripts')

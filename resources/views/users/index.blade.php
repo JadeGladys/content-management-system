@@ -321,7 +321,34 @@
         </form>
     </x-modal>
 
-    <x-user-filter-panel :search="$search" :filters="$filters" />
+    <x-filter-panel
+        panel-id="userFilterPanel"
+        open-button-id="openUserFilterPanel"
+        :action="route('users.index')"
+        :search="$search"
+        :fields="[
+            [
+                'key' => 'roles',
+                'label' => 'Role',
+                'placeholder' => 'Select role',
+                'options' => [
+                    ['value' => 'admin', 'label' => 'Admin'],
+                    ['value' => 'editor', 'label' => 'Editor'],
+                ],
+                'selected' => $filters['roles'] ?? [],
+            ],
+            [
+                'key' => 'access_statuses',
+                'label' => 'Status',
+                'placeholder' => 'Select status',
+                'options' => [
+                    ['value' => 'pending', 'label' => 'Pending setup'],
+                    ['value' => 'active', 'label' => 'Active'],
+                ],
+                'selected' => $filters['access_statuses'] ?? [],
+            ],
+        ]"
+    />
 
 @endsection
 

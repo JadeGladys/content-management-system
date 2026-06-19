@@ -18,9 +18,20 @@ class CareerService
     ) {
     }
 
-    public function getPaginatedCareers(?string $search, User $actor): LengthAwarePaginator
+    protected const FILTERABLE_COLUMNS = [
+        'type',
+        'employment_type',
+        'work_mode',
+        'location',
+        'meta_title',
+        'meta_keywords',
+    ];
+
+    public function getPaginatedCareers(?string $search, array $filters, User $actor): LengthAwarePaginator
     {
-        return Career::query()
+        $filters = $this->normalizeFilters($filters);
+
+        $query = Career::query()
             ->with([
                 'category:id,name,slug',
                 'createdBy:id,name',
@@ -56,10 +67,33 @@ class CareerService
                             $createdByQuery->where('name', 'ilike', "%{$search}%");
                         });
                 });
-            })
+            });
+
+        foreach (self::FILTERABLE_COLUMNS as $column) {
+            if (! empty($filters[$column])) {
+                $query->whereIn($column, $filters[$column]);
+            }
+        }
+
+        if (! empty($filters['category'])) {
+            $query->whereHas('category', function ($categoryQuery) use ($filters) {
+                $categoryQuery->whereIn('slug', $filters['category']);
+            });
+        }
+
+        return $query
             ->latest('updated_at')
             ->paginate(8)
             ->withQueryString();
+    }
+
+    protected function normalizeFilters(array $filters): array
+    {
+        return collect($filters)
+            ->mapWithKeys(fn ($values, $key) => [
+                $key => collect((array) $values)->filter()->values()->all(),
+            ])
+            ->all();
     }
 
     public function createCareer(array $data, User $actor): Career

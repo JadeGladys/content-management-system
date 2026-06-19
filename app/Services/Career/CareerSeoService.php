@@ -26,7 +26,7 @@ class CareerSeoService
 
         if ($forceGenerate || ! filled($metaDescription)) {
             $metaDescription = $this->generateMetaDescription(
-                $data['about'] ?? $career->about,
+                $data['overview'] ?? $career->overview,
                 $data['description'] ?? $career->description,
                 $data['requirements'] ?? $career->requirements
             );
@@ -85,12 +85,12 @@ class CareerSeoService
     }
 
     protected function generateMetaDescription(
-        array|string|null $about,
+        array|string|null $overview,
         array|string|null $description,
         array|string|null $requirements
     ): ?string
     {
-        foreach ([$about, $description, $requirements] as $section) {
+        foreach ([$overview, $description, $requirements] as $section) {
             $plainText = $this->extractContentPlainText($section);
 
             if (filled($plainText)) {
@@ -131,7 +131,7 @@ class CareerSeoService
             })
             ->map(fn ($word) => Str::title(Str::lower($word)));
 
-        $contentKeywords = $extractKeywords($career->about)
+        $contentKeywords = $extractKeywords($career->overview)
             ->merge($extractKeywords($career->description))
             ->merge($extractKeywords($career->requirements));
 

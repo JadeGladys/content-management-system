@@ -80,7 +80,7 @@ class CareerController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', $exception->getMessage());
+                ->with('error', 'Something went wrong while creating the article. Please try again.');
         }
     }
 
@@ -163,7 +163,7 @@ class CareerController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', $exception->getMessage());
+                ->with('error', 'Something went wrong while creating the article. Please try again.');
         }
     }
 
@@ -212,7 +212,7 @@ class CareerController extends Controller
         } catch (\Throwable $exception) {
             return redirect()
                 ->route('careers.show', $career)
-                ->with('error', $exception->getMessage());
+                ->with('error', 'Something went wrong while creating the article. Please try again.');
         }
     }
 
@@ -233,7 +233,7 @@ class CareerController extends Controller
         } catch (\Throwable $exception) {
             return redirect()
                 ->route('careers.edit', $career)
-                ->with('error', $exception->getMessage());
+                ->with('error', 'Something went wrong while creating the article. Please try again.');
         }
     }
 
@@ -310,7 +310,7 @@ class CareerController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),
             'careerTypes' => [
-                'security_officer' => 'Security Officer',
+                'security' => 'Security',
                 'corporate' => 'Corporate',
                 'technology' => 'Technology',
             ],

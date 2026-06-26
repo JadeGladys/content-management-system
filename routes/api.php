@@ -10,4 +10,5 @@ Route::get('/articles/{slug}', [PublicArticleController::class, 'show']);
 
 // Career routes
 Route::get('/careers', [PublicCareerController::class, 'index']);
+Route::get('/careers/filters', [PublicCareerController::class, 'filters']);
 Route::get('/careers/{slug}', [PublicCareerController::class, 'show']);

@@ -14,6 +14,26 @@ class Career extends Model
 
     protected $keyType = 'string';
 
+    public const TYPES = [
+        'security' => 'Security',
+        'corporate' => 'Corporate',
+        'technology' => 'Technology',
+    ];
+
+    public const EMPLOYMENT_TYPES = [
+        'full_time' => 'Full-time',
+        'part_time' => 'Part-time',
+        'contract' => 'Contract',
+        'internship' => 'Internship',
+        'temporary' => 'Temporary',
+    ];
+
+    public const WORK_MODES = [
+        'onsite' => 'On-site',
+        'remote' => 'Remote',
+        'hybrid' => 'Hybrid',
+    ];
+
     protected $fillable = [
         'title',
         'slug',

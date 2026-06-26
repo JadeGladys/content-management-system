@@ -3,13 +3,23 @@
 namespace App\Services\Career;
 
 use App\Models\Career;
+use App\Models\CareerCategory;
 use Illuminate\Support\Collection;
 
 class PublicCareerService
 {
-    public function getPublishedCareers(): Collection
+    protected const FILTERABLE_COLUMNS = [
+        'type',
+        'employment_type',
+        'work_mode',
+        'location',
+    ];
+
+    public function getPublishedCareers(?string $search = null, array $filters = []): Collection
     {
-        return Career::query()
+        $filters = $this->normalizeFilters($filters);
+
+        $query = Career::query()
             ->with(['category', 'createdBy'])
             ->where('status', 'published')
             ->where(function ($query) {
@@ -17,9 +27,36 @@ class PublicCareerService
                     ->whereNull('deadline')
                     ->orWhere('deadline', '>', now());
             })
-            ->latest('published_at')
-            ->get()
-            ->map(fn ($career) => $this->formatCareer($career, false));
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery
+                        ->where('title', 'ilike', "%{$search}%")
+                        ->orWhere('slug', 'ilike', "%{$search}%")
+                        ->orWhere('type', 'ilike', "%{$search}%")
+                        ->orWhere('employment_type', 'ilike', "%{$search}%")
+                        ->orWhere('work_mode', 'ilike', "%{$search}%")
+                        ->orWhere('location', 'ilike', "%{$search}%")
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'ilike', "%{$search}%");
+                        });
+                });
+            });
+            foreach (self::FILTERABLE_COLUMNS as $column) {
+                if (! empty($filters[$column])) {
+                    $query->whereIn($column, $filters[$column]);
+                }
+            }
+
+            if (! empty($filters['category'])) {
+                $query->whereHas('category', function ($categoryQuery) use ($filters) {
+                    $categoryQuery->whereIn('slug', $filters['category']);
+                });
+            }
+
+            return $query
+                ->latest('published_at')
+                ->get()
+                ->map(fn ($career) => $this->formatCareer($career, false));
     }
 
     public function getPublishedCareerBySlug(string $slug): ?array
@@ -64,5 +101,47 @@ class PublicCareerService
                 'no_index' => $career->no_index,
             ],
         ];
+    }
+
+    public function getFilterOptions(): array
+    {
+        return [
+            'categories' => CareerCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug'])
+                ->map(fn ($category) => ['value' => $category->slug, 'label' => $category->name])
+                ->values()
+                ->all(),
+            'types' => $this->mapOptions(Career::TYPES),
+            'employment_types' => $this->mapOptions(Career::EMPLOYMENT_TYPES),
+            'work_modes' => $this->mapOptions(Career::WORK_MODES),
+            'locations' => Career::query()
+                ->where('status', 'published')
+                ->whereNotNull('location')
+                ->select('location')
+                ->distinct()
+                ->orderBy('location')
+                ->pluck('location')
+                ->map(fn ($location) => ['value' => $location, 'label' => $location])
+                ->values()
+                ->all(),
+        ];
+    }
+
+    protected function mapOptions(array $options): array
+    {
+        return collect($options)
+            ->map(fn ($label, $value) => ['value' => $value, 'label' => $label])
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeFilters(array $filters): array
+    {
+        return collect($filters)
+            ->mapWithKeys(fn ($values, $key) => [
+                $key => collect((array) $values)->filter()->values()->all(),
+            ])
+            ->all();
     }
 }

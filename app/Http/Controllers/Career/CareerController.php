@@ -30,26 +30,6 @@ class CareerController extends Controller
         'work_mode' => 'Work mode',
     ];
 
-    protected const CAREER_TYPES = [
-        'security' => 'Security',
-        'corporate' => 'Corporate',
-        'technology' => 'Technology',
-    ];
-
-    protected const EMPLOYMENT_TYPES = [
-        'full_time' => 'Full-time',
-        'part_time' => 'Part-time',
-        'contract' => 'Contract',
-        'internship' => 'Internship',
-        'temporary' => 'Temporary',
-    ];
-
-    protected const WORK_MODES = [
-        'onsite' => 'On-site',
-        'remote' => 'Remote',
-        'hybrid' => 'Hybrid',
-    ];
-
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
@@ -74,10 +54,10 @@ class CareerController extends Controller
             'category' => $categories
                 ->map(fn ($category) => ['value' => $category->slug, 'label' => $category->name])
                 ->all(),
-            'type' => $this->mapOptions(self::CAREER_TYPES),
+            'type' => $this->mapOptions(Career::TYPES),
             'location' => $this->distinctColumnOptions('location'),
-            'employment_type' => $this->mapOptions(self::EMPLOYMENT_TYPES),
-            'work_mode' => $this->mapOptions(self::WORK_MODES),
+            'employment_type' => $this->mapOptions(Career::EMPLOYMENT_TYPES),
+            'work_mode' => $this->mapOptions(Career::WORK_MODES),
         ];
 
         $filterFields = collect(self::FILTER_FIELD_LABELS)
@@ -101,9 +81,9 @@ class CareerController extends Controller
             'searchSuggestions' => collect($this->distinctColumnOptions('title'))->pluck('value')
                 ->merge(collect($this->distinctColumnOptions('slug'))->pluck('value'))
                 ->merge($categories->pluck('name'))
-                ->merge(array_values(self::CAREER_TYPES))
-                ->merge(array_values(self::EMPLOYMENT_TYPES))
-                ->merge(array_values(self::WORK_MODES))
+                ->merge(array_values(Career::TYPES))
+                ->merge(array_values(Career::EMPLOYMENT_TYPES))
+                ->merge(array_values(Career::WORK_MODES))
                 ->filter()
                 ->unique()
                 ->values()
@@ -405,9 +385,9 @@ class CareerController extends Controller
             'categories' => CareerCategory::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),
-            'careerTypes' => self::CAREER_TYPES,
-            'employmentTypes' => self::EMPLOYMENT_TYPES,
-            'workModes' => self::WORK_MODES,
+            'careerTypes' => Career::TYPES,
+            'employmentTypes' => Career::EMPLOYMENT_TYPES,
+            'workModes' => Career::WORK_MODES,
             'locationSuggestions' => Career::query()
                 ->whereNotNull('location')
                 ->select('location')

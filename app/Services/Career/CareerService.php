@@ -23,8 +23,6 @@ class CareerService
         'employment_type',
         'work_mode',
         'location',
-        'meta_title',
-        'meta_keywords',
     ];
 
     public function getPaginatedCareers(?string $search, array $filters, User $actor): LengthAwarePaginator
@@ -178,7 +176,7 @@ class CareerService
 
     public function updateCareer(array $data, Career $career, User $actor): Career
     {
-        $this->ensureCanPublish($data);
+        $this->ensureCanPublish($data, $career);
         try {
             $action = $data['action'] ?? 'save';
             $isPublishing = $action === 'publish';
@@ -326,7 +324,7 @@ class CareerService
         return $category->id;
     }
 
-    private function ensureCanPublish(array $data): void
+    private function ensureCanPublish(array $data, ?Career $career = null): void
     {
         if (($data['action'] ?? null) !== 'publish') {
             return;
@@ -334,8 +332,8 @@ class CareerService
 
         if (!empty($data['deadline']) && now()->greaterThan($data['deadline'])) {
             Log::warning('Career publish blocked due to deadline', [
-                'career_id' => $career->id ?? null,
-                'deadline' => $career->deadline ?? null,
+                'career_id' => $career?->id,
+                'deadline' => $data['deadline'],
             ]);
             throw new \DomainException(
                 'Cannot publish a career with an expired deadline.'

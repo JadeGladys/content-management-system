@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 // Article routes
 Route::get('/articles', [PublicArticleController::class, 'index']);
+Route::get('/articles/filters', [PublicArticleController::class, 'filters']);
 Route::get('/articles/{slug}', [PublicArticleController::class, 'show']);
 
 // Career routes

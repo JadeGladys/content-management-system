@@ -3,18 +3,49 @@
 namespace App\Services\Article;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use Illuminate\Support\Collection;
 
 class PublicArticleService
 {
-    public function getPublishedArticles(): Collection
+    protected const FILTERABLE_COLUMNS = [
+        'type',
+    ];
+
+    public function getPublishedArticles(?string $search = null, array $filters = []): Collection
     {
-        return Article::query()
+        $filters = $this->normalizeFilters($filters);
+
+        $query = Article::query()
             ->with(['category', 'featuredImage', 'authorUser'])
             ->where('status', 'published')
-            ->latest('published_at')
-            ->get()
-            ->map(fn ($article) => $this->formatArticle($article, false));
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery
+                        ->where('title', 'ilike', "%{$search}%")
+                        ->orWhere('slug', 'ilike', "%{$search}%")
+                        ->orWhere('type', 'ilike', "%{$search}%")
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'ilike', "%{$search}%");
+                        });
+                });
+            });
+            foreach (self::FILTERABLE_COLUMNS as $column) {
+                if (! empty($filters[$column])) {
+                    $query->whereIn($column, $filters[$column]);
+                }
+            }
+
+            if (! empty($filters['category'])) {
+                $query->whereHas('category', function ($categoryQuery) use ($filters) {
+                    $categoryQuery->whereIn('slug', $filters['category']);
+                });
+            }
+
+            return $query
+                ->latest('published_at')
+                ->get()
+                ->map(fn ($article) => $this->formatArticle($article, false));
     }
 
     public function getPublishedArticleBySlug(string $slug): ?array
@@ -61,6 +92,36 @@ class PublicArticleService
                 'no_index' => $article->no_index,
             ],
         ];
+    }
+
+    public function getFilterOptions(): array
+    {
+        return [
+            'categories' => ArticleCategory::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug'])
+                ->map(fn ($category) => ['value' => $category->slug, 'label' => $category->name])
+                ->values()
+                ->all(),
+            'types' => $this->mapOptions(Article::TYPES),
+        ];
+    }
+
+    protected function mapOptions(array $options): array
+    {
+        return collect($options)
+            ->map(fn ($label, $value) => ['value' => $value, 'label' => $label])
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeFilters(array $filters): array
+    {
+        return collect($filters)
+            ->mapWithKeys(fn ($values, $key) => [
+                $key => collect((array) $values)->filter()->values()->all(),
+            ])
+            ->all();
     }
 
     private function calculateReadingTime(?array $content): string

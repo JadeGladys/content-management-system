@@ -30,13 +30,6 @@ class ArticleController extends Controller
         'status' => 'Status',
     ];
 
-    protected const ARTICLE_TYPES = [
-        'article' => 'Article',
-        'case_study' => 'Case Study',
-        'capability_sheet' => 'Capability Sheet',
-        'whitepaper' => 'Whitepaper',
-    ];
-
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
@@ -61,7 +54,7 @@ class ArticleController extends Controller
             'category' => $categories
                 ->map(fn ($category) => ['value' => $category->slug, 'label' => $category->name])
                 ->all(),
-            'type' => $this->mapOptions(self::ARTICLE_TYPES),
+            'type' => $this->mapOptions(Article::TYPES),
             'status' => $this->distinctColumnOptions('status'),
         ];
 
@@ -86,7 +79,7 @@ class ArticleController extends Controller
             'searchSuggestions' => collect($this->distinctColumnOptions('title'))->pluck('value')
                 ->merge(collect($this->distinctColumnOptions('slug'))->pluck('value'))
                 ->merge($categories->pluck('name'))
-                ->merge(array_values(self::ARTICLE_TYPES))
+                ->merge(array_values(Article::TYPES))
                 ->filter()
                 ->unique()
                 ->values()
@@ -332,7 +325,7 @@ class ArticleController extends Controller
     {
         return view('articles.update', array_merge($pageConfig,[
             'article' => $article,
-            'articleTypes' => self::ARTICLE_TYPES,
+            'articleTypes' => Article::TYPES,
             'categories' => ArticleCategory::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']),

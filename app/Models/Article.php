@@ -15,6 +15,13 @@ class Article extends Model
 
     protected $keyType = 'string';
 
+    public const TYPES = [
+        'article' => 'Article',
+        'case_study' => 'Case Study',
+        'capability_sheet' => 'Capability Sheet',
+        'whitepaper' => 'Whitepaper',
+    ];
+
     protected $fillable = [
         'title',
         'slug',

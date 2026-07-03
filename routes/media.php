@@ -8,5 +8,6 @@ Route::middleware(['auth', 'cms.access'])->group(function () {
         ->name('media.index');
 
     Route::post('/admin/media', [MediaController::class, 'store'])
+        ->middleware('throttle:10,1')
         ->name('media.store');
 });

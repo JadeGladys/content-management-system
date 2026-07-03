@@ -14,7 +14,7 @@ class StoreMediaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'media_upload' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+            'media_upload' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,webp'],
         ];
     }
 }

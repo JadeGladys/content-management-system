@@ -8,9 +8,12 @@ use App\Services\Media\MediaService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class MediaController extends Controller
 {
+    protected const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+
     public function __construct(
         protected MediaService $mediaService
     ) {
@@ -30,6 +33,12 @@ class MediaController extends Controller
 
     public function store(StoreMediaRequest $request): RedirectResponse
     {
+        $guardResponse = $this->ensureFileSizeIsValid($request->file('media_upload'));
+
+        if ($guardResponse) {
+            return $guardResponse;
+        }
+
         try {
             $media = $this->mediaService->storeMediaUpload(
                 $request->user(),
@@ -53,5 +62,17 @@ class MediaController extends Controller
                 ->withInput()
                 ->with('error', 'Something went wrong while uploading the image. Please try again.');
         }
+    }
+
+    protected function ensureFileSizeIsValid(UploadedFile $file): ?RedirectResponse
+    {
+        if ($file->getSize() > self::MAX_UPLOAD_SIZE_BYTES) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Images must be smaller than 5 MB.');
+        }
+
+        return null;
     }
 }

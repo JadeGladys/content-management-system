@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         'cms.access' => \App\Http\Middleware\EnsureUserCanAccessCms::class,
     ]);
+
+        $middleware->append(\App\Http\Middleware\AddSecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (HttpExceptionInterface $exception, Request $request) {

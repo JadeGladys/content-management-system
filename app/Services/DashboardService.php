@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\Career;
 use App\Models\Media;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -13,138 +15,350 @@ class DashboardService
 {
     public function getDashboardData(User $actor): array
     {
-        $articleQuery = $this->articleBaseQuery($actor);
-        $careerQuery = $this->careerBaseQuery($actor);
-        $mediaQuery = $this->mediaBaseQuery();
-
-        $totalArticles = (clone $articleQuery)->count();
-        $totalCareers = (clone $careerQuery)->count();
-        $totalMedia = (clone $mediaQuery)->count();
-        $totalUsers = $this->canViewUserStats($actor) ? User::query()->count() : null;
-        $pendingUserSetups = $this->canViewUserStats($actor)
-            ? User::query()->where('must_set_password', true)->count()
-            : 0;
-
-        $articlePublishingTrend = $this->trendSummary(
-            $this->articleBaseQuery($actor),
-            'published_at'
-        );
-
-        $careerPublishingTrend = $this->trendSummary(
-            $this->careerBaseQuery($actor),
-            'published_at'
-        );
-
-        $mediaUploadTrend = $this->trendSummary(
-            $this->mediaBaseQuery(),
-            'created_at'
-        );
-
         return [
-            'stat_cards' => $this->buildStatCards(
-                $actor,
-                $totalArticles,
-                $totalCareers,
-                $totalMedia,
-                $totalUsers,
-                $pendingUserSetups,
-                $articlePublishingTrend,
-                $careerPublishingTrend,
-                $mediaUploadTrend
-            ),
-
-            'stats' => [
-                'total_articles' => $totalArticles,
-                'published_articles' => (clone $articleQuery)->where('status', 'published')->count(),
-                'archived_articles' => (clone $articleQuery)->where('status', 'archived')->count(),
-
-                'total_careers' => $totalCareers,
-                'published_careers' => (clone $careerQuery)->where('status', 'published')->count(),
-                'closed_careers' => (clone $careerQuery)->where('status', 'closed')->count(),
-
-                'total_users' => $this->canViewUserStats($actor) ? User::query()->count() : 0,
-                'pending_user_setups' => $pendingUserSetups,
-
-                'total_media' => $totalMedia,
-            ],
-
-            'article_status_chart' => [
-                'labels' => ['Published', 'Draft', 'Archived'],
-                'series' => $this->statusBreakdown((clone $articleQuery), [
-                    'published',
-                    'draft',
-                    'archived',
-                ]),
-            ],
-
-            'career_status_chart' => [
-                'labels' => ['Published', 'Closed', 'Draft'],
-                'series' => $this->statusBreakdown((clone $careerQuery), [
-                    'published',
-                    'closed',
-                    'draft',
-                ]),
-            ],
-
-            'monthly_published_content_chart' => $this->monthlyPublishedContent($actor),
-            'monthly_archived_content_chart' => $this->monthlyArchivedContent($actor),
+            'kpi_cards' => $this->buildKpiCards($actor),
+            'publishing_activity' => $this->publishingActivity($actor),
+            'status_chart' => $this->combinedStatusChart($actor),
+            'recent_content' => $this->recentContent($actor),
+            'careers_closing_soon' => $this->careersClosingSoon($actor),
+            'stale_drafts' => $this->staleDrafts($actor),
+            'top_categories' => $this->topCategories($actor),
+            'popular_tags' => $this->popularTags(),
+            'media_breakdown' => $this->mediaBreakdown(),
+            'team_activity' => $this->canViewUserStats($actor) ? $this->teamActivity() : null,
         ];
     }
 
-    protected function buildStatCards(
-        User $actor,
-        int $totalArticles,
-        int $totalCareers,
-        int $totalMedia,
-        ?int $totalUsers,
-        int $pendingUserSetups,
-        array $articlePublishingTrend,
-        array $careerPublishingTrend,
-        array $mediaUploadTrend
-    ): array {
+    protected function buildKpiCards(User $actor): array
+    {
+        $isAdmin = $this->canViewUserStats($actor);
+
+        $articleTrend = $this->trendSummary($this->articleBaseQuery($actor), 'published_at');
+        $careerTrend = $this->trendSummary($this->careerBaseQuery($actor), 'published_at');
+
         $cards = [
             [
                 'label' => 'Total Articles',
-                'value' => $totalArticles,
-                'context' => 'Published ' . number_format($articlePublishingTrend['current_total']),
-                'pill_value' => $articlePublishingTrend['display'],
-                'pill_label' => 'Published',
-                'pill_tone' => $articlePublishingTrend['tone'],
-                'pill_icon' => $articlePublishingTrend['icon'],
+                'value' => $this->articleBaseQuery($actor)->count(),
+                'pill' => $articleTrend['display'],
+                'pill_tone' => $articleTrend['tone'],
+                'sparkline' => $this->monthlySeries($this->articleBaseQuery($actor), 'created_at'),
+                'color' => '#6366f1',
             ],
             [
-                'label' => 'Total Careers',
-                'value' => $totalCareers,
-                'context' => 'Published ' . number_format($careerPublishingTrend['current_total']),
-                'pill_value' => $careerPublishingTrend['display'],
-                'pill_label' => 'Published',
-                'pill_tone' => $careerPublishingTrend['tone'],
-                'pill_icon' => $careerPublishingTrend['icon'],
+                'label' => 'Open Careers',
+                'value' => $this->careerBaseQuery($actor)->where('status', 'published')->count(),
+                'pill' => $careerTrend['display'],
+                'pill_tone' => $careerTrend['tone'],
+                'sparkline' => $this->monthlySeries($this->careerBaseQuery($actor), 'created_at'),
+                'color' => '#0d9488',
             ],
             [
-                'label' => 'Total Media',
-                'value' => $totalMedia,
-                'context' => 'Global library',
-                'pill_value' => $mediaUploadTrend['display'],
-                'pill_label' => 'Uploads',
-                'pill_tone' => $mediaUploadTrend['tone'],
-                'pill_icon' => $mediaUploadTrend['icon'],
+                'label' => 'Media Files',
+                'value' => $this->mediaBaseQuery()->count(),
+                'pill' => $this->formatBytes((int) $this->mediaBaseQuery()->sum('file_size')),
+                'pill_tone' => 'neutral',
+                'sparkline' => $this->monthlySeries($this->mediaBaseQuery(), 'created_at'),
+                'color' => '#d97706',
+            ],
+            [
+                'label' => 'Drafts Pending',
+                'value' => $this->articleBaseQuery($actor)->where('status', 'draft')->count()
+                    + $this->careerBaseQuery($actor)->where('status', 'draft')->count(),
+                'pill' => 'needs review',
+                'pill_tone' => 'warning',
+                'sparkline' => $this->monthlySeries(
+                    $this->articleBaseQuery($actor)->where('status', 'draft'),
+                    'created_at'
+                ),
+                'color' => '#e11d48',
             ],
         ];
 
-        if ($this->canViewUserStats($actor)) {
-            array_splice($cards, 2, 0, [[
-                'label' => 'Total Users',
-                'value' => $totalUsers ?? 0,
-                'context' => 'Pending setup ' . number_format($pendingUserSetups),
-                'pill_value' => number_format($pendingUserSetups),
-                'pill_label' => 'Pending',
-                'pill_tone' => 'warning',
-                'pill_icon' => 'flat',
-            ]]);
+        if ($isAdmin) {
+            array_splice($cards, 3, 0, [
+                [
+                    'label' => 'Team Members',
+                    'value' => User::query()->count(),
+                    'pill' => $this->onlineUsersCount() . ' online',
+                    'pill_tone' => 'success',
+                    'sparkline' => $this->monthlySeries(User::query(), 'created_at'),
+                    'color' => '#0284c7',
+                ],
+                [
+                    'label' => 'Tags',
+                    'value' => Tag::query()->count(),
+                    'pill' => '+' . $this->trendSummary(Tag::query(), 'created_at')['current_total'],
+                    'pill_tone' => 'success',
+                    'sparkline' => $this->monthlySeries(Tag::query(), 'created_at'),
+                    'color' => '#7c3aed',
+                ],
+            ]);
         }
 
         return $cards;
+    }
+
+    protected function publishingActivity(User $actor): array
+    {
+        $published = $this->monthlyPublishedContent($actor);
+        $archived = $this->monthlyArchivedContent($actor);
+
+        return [
+            'labels' => $published['labels'],
+            'articles' => $published['articles'],
+            'careers' => $published['careers'],
+            'archived' => collect($archived['articles'])
+                ->zip($archived['careers'])
+                ->map(fn ($pair) => $pair->sum())
+                ->all(),
+        ];
+    }
+
+    protected function combinedStatusChart(User $actor): array
+    {
+        $articles = $this->statusBreakdown($this->articleBaseQuery($actor), ['published', 'draft', 'archived']);
+        $careers = $this->statusBreakdown($this->careerBaseQuery($actor), ['published', 'draft', 'closed']);
+
+        return [
+            'labels' => ['Published', 'Draft', 'Archived', 'Closed careers'],
+            'series' => [
+                $articles[0] + $careers[0],
+                $articles[1] + $careers[1],
+                $articles[2],
+                $careers[2],
+            ],
+        ];
+    }
+
+    protected function recentContent(User $actor, int $limit = 5): array
+    {
+        $articles = $this->articleBaseQuery($actor)
+            ->with(['category', 'authorUser'])
+            ->latest('updated_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Article $article) => [
+                'title' => $article->title,
+                'type' => 'Article',
+                'category' => $article->category?->name,
+                'author' => $article->authorUser?->name,
+                'status' => $article->status,
+                'updated_at' => $article->updated_at,
+            ]);
+
+        $careers = $this->careerBaseQuery($actor)
+            ->with(['category', 'createdBy'])
+            ->latest('updated_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Career $career) => [
+                'title' => $career->title,
+                'type' => 'Career',
+                'category' => $career->category?->name,
+                'author' => $career->createdBy?->name,
+                'status' => $career->status,
+                'updated_at' => $career->updated_at,
+            ]);
+
+        return $articles->concat($careers)
+            ->sortByDesc('updated_at')
+            ->take($limit)
+            ->map(fn (array $item) => [
+                ...$item,
+                'author_initials' => $this->initials($item['author']),
+                'updated_human' => $item['updated_at']?->diffForHumans() ?? '—',
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function careersClosingSoon(User $actor, int $limit = 4): array
+    {
+        return $this->careerBaseQuery($actor)
+            ->where('status', 'published')
+            ->whereNotNull('deadline')
+            ->whereBetween('deadline', [now()->startOfDay(), now()->addDays(14)->endOfDay()])
+            ->orderBy('deadline')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Career $career) => [
+                'title' => $career->title,
+                'location' => $career->location,
+                'employment_type' => $career->employment_type,
+                'work_mode' => $career->work_mode,
+                'days_left' => (int) now()->startOfDay()->diffInDays($career->deadline),
+            ])
+            ->all();
+    }
+
+    protected function staleDrafts(User $actor, int $limit = 5): array
+    {
+        $threshold = now()->subDays(14);
+
+        $articles = $this->articleBaseQuery($actor)
+            ->where('status', 'draft')
+            ->where('updated_at', '<', $threshold)
+            ->get(['title', 'updated_at']);
+
+        $careers = $this->careerBaseQuery($actor)
+            ->where('status', 'draft')
+            ->where('updated_at', '<', $threshold)
+            ->get(['title', 'updated_at']);
+
+        return $articles->concat($careers)
+            ->sortBy('updated_at')
+            ->take($limit)
+            ->map(fn ($item) => [
+                'title' => $item->title,
+                'days_stale' => (int) $item->updated_at->diffInDays(now()),
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function topCategories(User $actor, int $limit = 5): array
+    {
+        $categories = ArticleCategory::query()
+            ->withCount([
+                'articles' => fn ($query) => $query->when(
+                    $actor->role === 'editor',
+                    fn ($q) => $q->where('author', $actor->id)
+                ),
+            ])
+            ->orderByDesc('articles_count')
+            ->limit($limit)
+            ->get();
+
+        return [
+            'labels' => $categories->pluck('name')->all(),
+            'series' => $categories->pluck('articles_count')->map(fn ($count) => (int) $count)->all(),
+        ];
+    }
+
+    protected function popularTags(int $limit = 10): array
+    {
+        return Tag::query()
+            ->withCount('articles')
+            ->orderByDesc('articles_count')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Tag $tag) => ['name' => $tag->name, 'count' => (int) $tag->articles_count])
+            ->all();
+    }
+
+    protected function mediaBreakdown(): array
+    {
+        $counts = $this->mediaBaseQuery()
+            ->selectRaw('file_type, COUNT(*) as aggregate')
+            ->groupBy('file_type')
+            ->pluck('aggregate', 'file_type');
+
+        $buckets = ['Images' => 0, 'Documents' => 0, 'Other' => 0];
+
+        foreach ($counts as $mime => $count) {
+            $bucket = match (true) {
+                str_starts_with((string) $mime, 'image/') => 'Images',
+                str_contains((string) $mime, 'pdf'),
+                str_contains((string) $mime, 'word'),
+                str_contains((string) $mime, 'spreadsheet'),
+                str_starts_with((string) $mime, 'text/') => 'Documents',
+                default => 'Other',
+            };
+
+            $buckets[$bucket] += $count;
+        }
+
+        return [
+            'labels' => array_keys($buckets),
+            'series' => array_values($buckets),
+            'total_files' => array_sum($buckets),
+            'total_size' => $this->formatBytes((int) $this->mediaBaseQuery()->sum('file_size')),
+        ];
+    }
+
+    protected function teamActivity(int $limit = 4): array
+    {
+        $articleCounts = Article::query()
+            ->selectRaw('author as user_id, COUNT(*) as aggregate')
+            ->groupBy('author')
+            ->pluck('aggregate', 'user_id');
+
+        $careerCounts = Career::query()
+            ->selectRaw('created_by as user_id, COUNT(*) as aggregate')
+            ->groupBy('created_by')
+            ->pluck('aggregate', 'user_id');
+
+        $totals = $articleCounts->keys()
+            ->merge($careerCounts->keys())
+            ->unique()
+            ->mapWithKeys(fn ($id) => [
+                $id => (int) ($articleCounts[$id] ?? 0) + (int) ($careerCounts[$id] ?? 0),
+            ])
+            ->sortDesc()
+            ->take($limit);
+
+        $users = User::query()
+            ->whereIn('id', $totals->keys())
+            ->get(['id', 'name', 'role'])
+            ->keyBy('id');
+
+        $max = max($totals->max() ?? 0, 1);
+
+        return $totals
+            ->map(fn (int $count, string $userId) => [
+                'name' => $users[$userId]->name ?? 'Unknown',
+                'role' => $users[$userId]->role ?? null,
+                'initials' => $this->initials($users[$userId]->name ?? null),
+                'count' => $count,
+                'percent' => (int) round(($count / $max) * 100),
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function onlineUsersCount(): int
+    {
+        return DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
+            ->distinct()
+            ->count('user_id');
+    }
+
+    protected function monthlySeries(Builder $query, string $dateColumn, int $months = 8): array
+    {
+        $start = now()->subMonths($months - 1)->startOfMonth();
+
+        $counts = $query
+            ->whereNotNull($dateColumn)
+            ->where($dateColumn, '>=', $start)
+            ->selectRaw("to_char({$dateColumn}, 'YYYY-MM') as month_key, COUNT(*) as aggregate")
+            ->groupBy('month_key')
+            ->pluck('aggregate', 'month_key');
+
+        return collect(range($months - 1, 0))
+            ->map(fn (int $offset) => (int) ($counts[now()->subMonths($offset)->format('Y-m')] ?? 0))
+            ->all();
+    }
+
+    protected function initials(?string $name): string
+    {
+        return collect(explode(' ', (string) $name))
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
+            ->implode('');
+    }
+
+    protected function formatBytes(int $bytes): string
+    {
+        return match (true) {
+            $bytes >= 1073741824 => round($bytes / 1073741824, 1) . ' GB',
+            $bytes >= 1048576 => round($bytes / 1048576, 1) . ' MB',
+            $bytes >= 1024 => round($bytes / 1024, 1) . ' KB',
+            default => $bytes . ' B',
+        };
     }
 
     protected function articleBaseQuery(User $actor): Builder

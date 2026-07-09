@@ -36,7 +36,6 @@
             <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
                 Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 18 ? 'afternoon' : 'evening') }}, {{ str(auth()->user()->name)->before(' ') }} 👋
             </h1>
-            <p class="mt-1 text-sm text-slate-500">Here's what's happening across your content today.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">

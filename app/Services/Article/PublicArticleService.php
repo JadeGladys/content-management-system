@@ -4,6 +4,7 @@ namespace App\Services\Article;
 
 use App\Models\Article;
 use App\Models\ArticleCategory;
+use App\Models\Tag;
 use Illuminate\Support\Collection;
 
 class PublicArticleService
@@ -17,7 +18,7 @@ class PublicArticleService
         $filters = $this->normalizeFilters($filters);
 
         $query = Article::query()
-            ->with(['category', 'featuredImage', 'authorUser'])
+            ->with(['category', 'featuredImage', 'authorUser', 'tags'])
             ->where('status', 'published')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($innerQuery) use ($search) {
@@ -25,6 +26,9 @@ class PublicArticleService
                         ->where('title', 'ilike', "%{$search}%")
                         ->orWhere('slug', 'ilike', "%{$search}%")
                         ->orWhere('type', 'ilike', "%{$search}%")
+                        ->orWhereHas('tags', function ($tagQuery) use ($search) {
+                            $tagQuery->where('name', 'ilike', "%{$search}%");
+                        })
                         ->orWhereHas('category', function ($categoryQuery) use ($search) {
                             $categoryQuery->where('name', 'ilike', "%{$search}%");
                         });
@@ -42,6 +46,12 @@ class PublicArticleService
                 });
             }
 
+            if (! empty($filters['tag'])) {
+                $query->whereHas('tags', function ($tagQuery) use ($filters) {
+                    $tagQuery->whereIn('slug', $filters['tag']);
+                });
+            }
+
             return $query
                 ->latest('published_at')
                 ->get()
@@ -51,7 +61,7 @@ class PublicArticleService
     public function getPublishedArticleBySlug(string $slug): ?array
     {
         $article = Article::query()
-            ->with(['category', 'featuredImage', 'ogImage', 'authorUser'])
+            ->with(['category', 'featuredImage', 'ogImage', 'authorUser', 'tags'])
             ->where('status', 'published')
             ->where('slug', $slug)
             ->first();
@@ -72,6 +82,8 @@ class PublicArticleService
             'overview' => $article->overview,
             'content' => $includeContent ? $article->content : null,
             'category' => $article->category?->name,
+            'type' => $article->type ? (Article::TYPES[$article->type] ?? $article->type) : null,
+            'tags' => $article->tags->pluck('name')->all(),
             'published_at' => optional($article->published_at)->format('M Y'),
             'reading_time' => $this->calculateReadingTime($article->content),
             'author' => $article->authorUser?->name,
@@ -104,6 +116,12 @@ class PublicArticleService
                 ->values()
                 ->all(),
             'types' => $this->mapOptions(Article::TYPES),
+            'tags' => Tag::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug'])
+                ->map(fn ($tag) => ['value' => $tag->slug, 'label' => $tag->name])
+                ->values()
+                ->all(),
         ];
     }
 

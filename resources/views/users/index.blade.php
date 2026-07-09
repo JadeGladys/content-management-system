@@ -1,27 +1,27 @@
 @extends('layouts.admin', ['title' => 'Users'])
 
 @section('content')
-    <div class="my-6 px-4 md:px-8">
+    <div class="my-4 px-4 md:px-6">
         <div class="mx-auto max-w-7xl min-w-0">
-            <div class="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/70 px-6 py-6 shadow-sm md:px-8">
-                <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center">
+            <div class="mb-8 rounded-xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/70 px-4 py-4 shadow-sm md:px-6">
+                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center">
                     <div class="max-w-4xl">
                         <p class="text-sm font-semibold uppercase tracking-[0.22em] text-blue-600">Users Directory</p>
-                        <h1 class="mt-3 text-3xl leading-tight font-semibold tracking-tight text-slate-900 md:text-[3.15rem]">Manage every CMS user from one view</h1>
-                        <p class="mt-3 max-w-[56rem] text-sm leading-6 text-slate-600 md:text-base">
+                        <h1 class="mt-3 text-3xl leading-tight font-semibold tracking-tight text-slate-900 md:text-[2.35rem]">Manage every CMS user from one view</h1>
+                        <p class="mt-2 max-w-[46rem] text-sm leading-6 text-slate-600">
                             Review account details, track invitation state, and create new users without leaving the listing page.
                         </p>
                     </div>
 
-                    <div class="rounded-3xl border border-white/80 bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Current inventory</p>
-                        <p class="mt-2 text-3xl font-semibold text-slate-900">{{ $users->total() }}</p>
+                    <div class="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
+                        <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">Current inventory</p>
+                        <p class="mt-1 text-xl font-semibold text-slate-900">{{ $users->total() }}</p>
                         <p class="mt-1 text-sm text-slate-500">total user{{ $users->total() === 1 ? '' : 's' }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-6 flex flex-wrap items-center gap-6">
+            <div class="mb-5 flex flex-wrap items-center gap-4">
                 <form method="GET" action="{{ route('users.index') }}" class="w-full max-w-sm" role="search">
                     @foreach (($filters['roles'] ?? []) as $role)
                         <input type="hidden" name="roles[]" value="{{ $role }}">
@@ -30,7 +30,7 @@
                     @foreach (($filters['access_statuses'] ?? []) as $status)
                         <input type="hidden" name="access_statuses[]" value="{{ $status }}">
                     @endforeach
-                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+                    <div class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
                         <button type="submit" class="shrink-0 text-slate-400 transition hover:text-blue-600">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192.904 192.904" class="size-5 fill-current" aria-hidden="true">
                                 <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z" />
@@ -63,11 +63,11 @@
                     </div>
                 </form>
 
-                <div class="ml-auto flex flex-wrap gap-4">
+                <div class="ml-auto flex flex-wrap gap-3">
                     <button
                         type="button"
                         id="openUserFilterPanel"
-                        class="{{ $hasActiveFilters ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50' }} flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        class="{{ $hasActiveFilters ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50' }} flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 64 64" aria-hidden="true">
                             <path d="M26.55 61.295a2.18 2.18 0 0 1-2.18-2.18v-20.96L4.161 15.928A6.115 6.115 0 0 1 8.685 5.705h46.63a6.115 6.115 0 0 1 4.524 10.224L39.63 38.154v12.241a2.18 2.18 0 0 1-.817 1.7l-10.9 8.72a2.18 2.18 0 0 1-1.363.48M8.685 10.065a1.755 1.755 0 0 0-1.297 2.932l20.775 22.89a2.18 2.18 0 0 1 .567 1.428v17.266l6.54-5.276v-11.99a2.18 2.18 0 0 1 .567-1.472l20.775-22.89a1.755 1.755 0 0 0-1.297-2.888z" />
@@ -82,7 +82,7 @@
 
                     <button
                         type="button"
-                        class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 32 32" aria-hidden="true">
                             <path d="M9.24 17.56a1.24 1.24 0 0 1 0-1.75 1.22 1.22 0 0 1 1.73 0l3.78 3.81V3.21a1.25 1.25 0 0 1 2.5 0v16.41L21 15.81a1.22 1.22 0 0 1 1.73 0 1.24 1.24 0 0 1 0 1.75l-5.89 6a1.21 1.21 0 0 1-1.74 0zm19.53 2.16a1.23 1.23 0 0 0-1.23 1.22v5.88a.73.73 0 0 1-.73.73H5.19a.73.73 0 0 1-.73-.73v-5.88a1.23 1.23 0 0 0-2.46 0v5.88A3.19 3.19 0 0 0 5.19 30h21.62A3.19 3.19 0 0 0 30 26.82v-5.88a1.23 1.23 0 0 0-1.23-1.22" />
@@ -93,7 +93,7 @@
                     <button
                         type="button"
                         id="openCreateUserModal"
-                        class="flex items-center gap-2 rounded-2xl border border-blue-600 bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        class="flex items-center gap-2 rounded-xl border border-blue-600 bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 512 512" aria-hidden="true">
                             <g>
@@ -106,9 +106,9 @@
                 </div>
             </div>
 
-            <div class="rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="max-w-full overflow-x-auto">
-                    <table class="min-w-[1120px] w-full table-fixed">
+                    <table class="min-w-[950px] w-full table-fixed">
                         <colgroup>
                             <col class="w-[4%]">
                             <col class="w-[22%]">
@@ -120,8 +120,8 @@
                         </colgroup>
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
                             <tr>
-                                <th scope="col" class="w-8 py-5 pl-4">
-                                    <label class="group inline-block">
+                                <th scope="col" class="w-4 py-4 text-center">
+                                    <label class="group inline-flex items-center justify-center">
                                         <input type="checkbox" class="sr-only" id="master-checkbox" />
                                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white group-has-[input:checked]:border-blue-600 group-has-[input:checked]:bg-blue-600 group-focus-within:ring-2 group-focus-within:ring-blue-500" aria-hidden="true">
                                             <svg class="size-3.5 text-white opacity-0 group-has-[input:checked]:opacity-100" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2">
@@ -130,22 +130,22 @@
                                         </span>
                                     </label>
                                 </th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Users</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Email</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Role</th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Access status</th>
-                                <th scope="col" class="px-4 py-5 leading-tight">
+                                <th scope="col" class="px-3 py-4 ">Users</th>
+                                <th scope="col" class="px-3 py-4 ">Email</th>
+                                <th scope="col" class="px-3 py-4 ">Role</th>
+                                <th scope="col" class="px-3 py-4 ">Access status</th>
+                                <th scope="col" class="px-3 py-4  leading-tight">
                                     <span class="block">Updated at</span>
                                 </th>
-                                <th scope="col" class="px-4 py-5 whitespace-nowrap">Action</th>
+                                <th scope="col" class="px-3 py-4 ">Action</th>
                             </tr>
                         </thead>
 
                         <tbody class="divide-y divide-slate-200 text-[13px]">
                             @forelse ($users as $listedUser)
                                 <tr class="transition hover:bg-slate-50/80 has-[:checked]:bg-blue-50/50">
-                                    <td class="w-8 py-5 pl-4 align-middle">
-                                        <label class="group inline-block">
+                                    <td class="px-4 py-5 text-center">
+                                        <label class="group inline-flex items-center justify-center">
                                             <input type="checkbox" class="sr-only row-checkbox" />
                                             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white group-has-[input:checked]:border-blue-600 group-has-[input:checked]:bg-blue-600 group-focus-within:ring-2 group-focus-within:ring-blue-500" aria-hidden="true">
                                                 <svg class="size-3.5 text-white opacity-0 group-has-[input:checked]:opacity-100" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2">
@@ -209,7 +209,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="7" class="px-4 py-6 text-center text-xs text-slate-500">
                                         No users found.
                                     </td>
                                 </tr>
@@ -219,8 +219,8 @@
                 </div>
             </div>
 
-            <div class="mx-auto mt-6 flex flex-wrap items-center justify-between gap-6">
-                <div class="text-sm text-slate-600">
+            <div class="mx-auto mt-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="text-xs text-slate-600">
                     Showing
                     <span class="mx-1 font-medium">{{ $users->firstItem() ?? 0 }}</span>
                     to
@@ -233,7 +233,7 @@
                 @if ($users->hasPages())
                     <nav aria-label="Pagination" class="flex w-max items-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm divide-x divide-slate-200">
                         @if ($users->onFirstPage())
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center text-slate-300">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center text-slate-300">
                                 ‹
                             </span>
                         @else
@@ -245,7 +245,7 @@
                         @foreach (range(1, $users->lastPage()) as $page)
                             @if ($page >= max(1, $users->currentPage() - 2) && $page <= min($users->lastPage(), $users->currentPage() + 2))
                                 @if ($page === $users->currentPage())
-                                    <span class="flex h-12 w-12 shrink-0 items-center justify-center bg-blue-600 text-sm font-semibold text-white">
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center bg-blue-600 text-sm font-semibold text-white">
                                         {{ $page }}
                                     </span>
                                 @else
@@ -261,7 +261,7 @@
                                 ›
                             </a>
                         @else
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center text-slate-300">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center text-slate-300">
                                 ›
                             </span>
                         @endif

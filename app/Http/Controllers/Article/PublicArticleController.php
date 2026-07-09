@@ -12,6 +12,7 @@ class PublicArticleController extends Controller
     protected const FILTER_KEYS = [
         'category',
         'type',
+        'tag',
     ];
 
     public function __construct(

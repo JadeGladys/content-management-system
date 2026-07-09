@@ -44,6 +44,9 @@ class CareerController extends Controller
             ])
             ->all();
 
+        $filters['published_from'] = $request->string('published_from')->toString();
+        $filters['published_to'] = $request->string('published_to')->toString();
+
         $hasActiveFilters = collect($filters)->contains(fn ($values) => ! empty($values));
 
         $categories = CareerCategory::query()
@@ -70,6 +73,14 @@ class CareerController extends Controller
             ])
             ->values()
             ->all();
+
+        $filterFields[] = [
+            'type' => 'date_range',
+            'key' => 'published',
+            'label' => 'Published',
+            'from' => $filters['published_from'],
+            'to' => $filters['published_to'],
+        ];
 
         return view('careers.index', [
             'careers' => $this->careerService->getPaginatedCareers($search, $filters, $request->user()),

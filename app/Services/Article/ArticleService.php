@@ -25,10 +25,15 @@ class ArticleService
     protected const FILTERABLE_COLUMNS = [
         'type',
         'status',
+        'author',
     ];
 
     public function getPaginatedArticles(?string $search, array $filters, User $actor): LengthAwarePaginator
     {
+        $publishedFrom = $filters['published_from'] ?? null;
+        $publishedTo = $filters['published_to'] ?? null;
+        unset($filters['published_from'], $filters['published_to']);
+
         $filters = $this->normalizeFilters($filters);
 
         $query = Article::query()
@@ -80,6 +85,20 @@ class ArticleService
             $query->whereHas('category', function ($categoryQuery) use ($filters) {
                 $categoryQuery->whereIn('slug', $filters['category']);
             });
+        }
+
+        if (! empty($filters['tag'])) {
+            $query->whereHas('tags', function ($tagQuery) use ($filters) {
+                $tagQuery->whereIn('slug', $filters['tag']);
+            });
+        }
+
+        if (! empty($publishedFrom)) {
+            $query->whereDate('published_at', '>=', $publishedFrom);
+        }
+
+        if (! empty($publishedTo)) {
+            $query->whereDate('published_at', '<=', $publishedTo);
         }
 
         return $query

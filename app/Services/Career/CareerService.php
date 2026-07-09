@@ -27,6 +27,10 @@ class CareerService
 
     public function getPaginatedCareers(?string $search, array $filters, User $actor): LengthAwarePaginator
     {
+        $publishedFrom = $filters['published_from'] ?? null;
+        $publishedTo = $filters['published_to'] ?? null;
+        unset($filters['published_from'], $filters['published_to']);
+
         $filters = $this->normalizeFilters($filters);
 
         $query = Career::query()
@@ -77,6 +81,14 @@ class CareerService
             $query->whereHas('category', function ($categoryQuery) use ($filters) {
                 $categoryQuery->whereIn('slug', $filters['category']);
             });
+        }
+
+        if (! empty($publishedFrom)) {
+            $query->whereDate('published_at', '>=', $publishedFrom);
+        }
+
+        if (! empty($publishedTo)) {
+            $query->whereDate('published_at', '<=', $publishedTo);
         }
 
         return $query

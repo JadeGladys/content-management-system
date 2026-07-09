@@ -10,6 +10,7 @@ use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\Media;
 use App\Models\Tag;
+use App\Models\User;
 use App\Services\Article\ArticleContentRenderer;
 use App\Services\Article\ArticleService;
 use Illuminate\Contracts\View\View;
@@ -28,13 +29,21 @@ class ArticleController extends Controller
         'category' => 'Category',
         'type' => 'Type',
         'status' => 'Status',
+        'tag' => 'Tags',
+        'author' => 'Author',
     ];
 
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
 
-        $filterKeys = array_keys(self::FILTER_FIELD_LABELS);
+        $filterLabels = self::FILTER_FIELD_LABELS;
+
+        if ($request->user()->role !== 'admin') {
+            unset($filterLabels['author']);
+        }
+
+        $filterKeys = array_keys($filterLabels);
         $filters = collect($filterKeys)
             ->mapWithKeys(fn ($key) => [
                 $key => collect((array) $request->input($key, []))
@@ -43,7 +52,10 @@ class ArticleController extends Controller
                     ->all(),
             ])
             ->all();
-        
+
+        $filters['published_from'] = $request->string('published_from')->toString();
+        $filters['published_to'] = $request->string('published_to')->toString();
+
         $hasActiveFilters = collect($filters)->contains(fn ($values) => ! empty($values));
 
         $categories = ArticleCategory::query()
@@ -56,9 +68,20 @@ class ArticleController extends Controller
                 ->all(),
             'type' => $this->mapOptions(Article::TYPES),
             'status' => $this->distinctColumnOptions('status'),
+            'tag' => Tag::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug'])
+                ->map(fn ($tag) => ['value' => $tag->slug, 'label' => $tag->name])
+                ->all(),
+            'author' => User::query()
+                ->whereIn('id', Article::query()->select('author'))
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn ($user) => ['value' => $user->id, 'label' => $user->name])
+                ->all(),
         ];
 
-        $filterFields = collect(self::FILTER_FIELD_LABELS)
+        $filterFields = collect($filterLabels)
             ->map(fn ($label, $key) => [
                 'key' => $key,
                 'label' => $label,
@@ -68,6 +91,14 @@ class ArticleController extends Controller
             ])
             ->values()
             ->all();
+
+        $filterFields[] = [
+            'type' => 'date_range',
+            'key' => 'published',
+            'label' => 'Published',
+            'from' => $filters['published_from'],
+            'to' => $filters['published_to'],
+        ];
 
         return view('articles.index', [
             'articles' => $this->articleService->getPaginatedArticles($search, $filters, $request->user()),

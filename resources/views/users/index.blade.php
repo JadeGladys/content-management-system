@@ -67,7 +67,7 @@
                     <button
                         type="button"
                         id="openUserFilterPanel"
-                        class="{{ $hasActiveFilters ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50' }} flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        class="{{ $hasActiveFilters ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50' }} flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 fill-current" viewBox="0 0 64 64" aria-hidden="true">
                             <path d="M26.55 61.295a2.18 2.18 0 0 1-2.18-2.18v-20.96L4.161 15.928A6.115 6.115 0 0 1 8.685 5.705h46.63a6.115 6.115 0 0 1 4.524 10.224L39.63 38.154v12.241a2.18 2.18 0 0 1-.817 1.7l-10.9 8.72a2.18 2.18 0 0 1-1.363.48M8.685 10.065a1.755 1.755 0 0 0-1.297 2.932l20.775 22.89a2.18 2.18 0 0 1 .567 1.428v17.266l6.54-5.276v-11.99a2.18 2.18 0 0 1 .567-1.472l20.775-22.89a1.755 1.755 0 0 0-1.297-2.888z" />
@@ -110,7 +110,7 @@
                 <div class="max-w-full overflow-x-auto">
                     <table class="min-w-[950px] w-full table-fixed">
                         <colgroup>
-                            <col class="w-[4%]">
+                            <col class="w-[3.5rem]">
                             <col class="w-[22%]">
                             <col class="w-[22%]">
                             <col class="w-[10%]">
@@ -120,7 +120,7 @@
                         </colgroup>
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
                             <tr>
-                                <th scope="col" class="w-4 py-4 text-center">
+                                <th scope="col" class="px-4 py-4 text-center">
                                     <label class="group inline-flex items-center justify-center">
                                         <input type="checkbox" class="sr-only" id="master-checkbox" />
                                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white group-has-[input:checked]:border-blue-600 group-has-[input:checked]:bg-blue-600 group-focus-within:ring-2 group-focus-within:ring-blue-500" aria-hidden="true">
@@ -130,14 +130,14 @@
                                         </span>
                                     </label>
                                 </th>
-                                <th scope="col" class="px-3 py-4 ">Users</th>
-                                <th scope="col" class="px-3 py-4 ">Email</th>
-                                <th scope="col" class="px-3 py-4 ">Role</th>
-                                <th scope="col" class="px-3 py-4 ">Access status</th>
-                                <th scope="col" class="px-3 py-4  leading-tight">
+                                <th scope="col" class="px-3 py-4">Users</th>
+                                <th scope="col" class="px-3 py-4">Email</th>
+                                <th scope="col" class="px-3 py-4">Role</th>
+                                <th scope="col" class="px-3 py-4">Access status</th>
+                                <th scope="col" class="px-3 py-4 leading-tight">
                                     <span class="block">Updated at</span>
                                 </th>
-                                <th scope="col" class="px-3 py-4 ">Action</th>
+                                <th scope="col" class="px-3 py-4">Action</th>
                             </tr>
                         </thead>
 
@@ -157,7 +157,7 @@
 
                                     <td class="px-4 py-5 font-medium text-slate-900">
                                         <div class="flex min-w-0 items-center gap-3">
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-sm font-semibold text-blue-700">
+                                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-xs font-semibold text-blue-700">
                                                 {{ \Illuminate\Support\Str::of($listedUser->name)->trim()->explode(' ')->take(2)->map(fn ($part) => \Illuminate\Support\Str::substr($part, 0, 1))->implode('') }}
                                             </div>
                                             <div class="min-w-0">
@@ -171,31 +171,31 @@
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500 whitespace-nowrap">
-                                        <span class="inline-flex rounded-xl bg-slate-100 px-3 py-2 text-[12px] font-semibold tracking-wide text-slate-600">
+                                        <span class="inline-flex rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-semibold tracking-wide text-slate-600">
                                             {{ ucfirst($listedUser->role) }}
                                         </span>
                                     </td>
 
                                     <td class="px-4 py-5 text-slate-500 whitespace-nowrap">
-                                        <span class="inline-flex w-max items-center gap-2 rounded-xl border px-3 py-2 text-[12px] font-semibold {{ $listedUser->must_set_password ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700' }}">
-                                            <span class="h-2.5 w-2.5 rounded-full {{ $listedUser->must_set_password ? 'bg-amber-500' : 'bg-emerald-500' }}"></span>
+                                        <span class="inline-flex w-max items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-semibold {{ $listedUser->must_set_password ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700' }}">
+                                            <span class="h-2 w-2 rounded-full {{ $listedUser->must_set_password ? 'bg-amber-500' : 'bg-emerald-500' }}"></span>
                                             {{ $listedUser->must_set_password ? 'Pending setup' : 'Active' }}
                                         </span>
                                     </td>
 
-                                    <td class="px-4 py-5 text-slate-500">
-                                        <span class="block leading-6">
-                                            {{ $listedUser->updated_at->format('d M Y,') }}<br>
+                                    <td class="px-3 py-4 text-slate-500">
+                                        <span class="block whitespace-nowrap leading-6">
+                                            {{ $listedUser->updated_at->format('d M Y') }}
                                         </span>
                                     </td>
 
-                                    <td class="px-4 py-5 text-slate-500">
+                                    <td class="px-5 py-4 text-slate-500">
                                         @if ($listedUser->must_set_password)
                                             <form method="POST" action="{{ route('users.password-setup.resend', $listedUser) }}">
                                                 @csrf
                                                 <button
                                                     type="submit"
-                                                    class="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-semibold text-amber-700 transition hover:bg-amber-100"
+                                                    class="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-100"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992V4.356m-.58 4.992A9 9 0 1 0 6.5 18.5" />
@@ -237,7 +237,7 @@
                                 ‹
                             </span>
                         @else
-                            <a href="{{ $users->previousPageUrl() }}" class="flex h-12 w-12 shrink-0 items-center justify-center hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                            <a href="{{ $users->previousPageUrl() }}" class="flex h-11 w-11 shrink-0 items-center justify-center hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                 ‹
                             </a>
                         @endif
@@ -249,7 +249,7 @@
                                         {{ $page }}
                                     </span>
                                 @else
-                                    <a href="{{ $users->url($page) }}" class="flex h-12 w-12 shrink-0 items-center justify-center text-sm font-semibold text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                                    <a href="{{ $users->url($page) }}" class="flex h-11 w-11 shrink-0 items-center justify-center text-sm font-semibold text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                         {{ $page }}
                                     </a>
                                 @endif
@@ -257,7 +257,7 @@
                         @endforeach
 
                         @if ($users->hasMorePages())
-                            <a href="{{ $users->nextPageUrl() }}" class="flex h-12 w-12 shrink-0 items-center justify-center hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                            <a href="{{ $users->nextPageUrl() }}" class="flex h-11 w-11 shrink-0 items-center justify-center hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                 ›
                             </a>
                         @else

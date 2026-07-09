@@ -23,6 +23,34 @@
 
             <div class="mb-5 flex items-center gap-4">
                 <form method="GET" action="{{ route('articles.index') }}" class="min-w-0 flex-1 max-w-sm" role="search">
+                    @foreach (($filters['category'] ?? []) as $category)
+                        <input type="hidden" name="category[]" value="{{ $category }}">
+                    @endforeach
+
+                    @foreach (($filters['type'] ?? []) as $type)
+                        <input type="hidden" name="type[]" value="{{ $type }}">
+                    @endforeach
+
+                    @foreach (($filters['status'] ?? []) as $status)
+                        <input type="hidden" name="status[]" value="{{ $status }}">
+                    @endforeach
+
+                    @foreach (($filters['tag'] ?? []) as $tag)
+                        <input type="hidden" name="tag[]" value="{{ $tag }}">
+                    @endforeach
+
+                    @foreach (($filters['author'] ?? []) as $author)
+                        <input type="hidden" name="author[]" value="{{ $author }}">
+                    @endforeach
+
+                    @if (! empty($filters['published_from']))
+                        <input type="hidden" name="published_from" value="{{ $filters['published_from'] }}">
+                    @endif
+
+                    @if (! empty($filters['published_to']))
+                        <input type="hidden" name="published_to" value="{{ $filters['published_to'] }}">
+                    @endif
+
                     <div class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
 
                         <button type="submit" class="shrink-0 text-slate-400 transition hover:text-blue-600">
@@ -77,7 +105,7 @@
                         Filter
                         @if ($hasActiveFilters)
                             <span class="{{ $hasActiveFilters ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700' }} inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold">
-                                {{ collect($filters)->flatten()->count() }}
+                                {{ collect($filters)->flatten()->filter()->count() }}
                             </span>
                         @endif
                     </button>

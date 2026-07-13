@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Concerns\Auditable;
 
 class Article extends Model
 {
+    use Auditable;
+    
     use HasUlids;
 
     public $incrementing = false;

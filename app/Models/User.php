@@ -8,11 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Concerns\Auditable;
 
 class User extends Authenticatable
 {
-    
+    use Auditable;
     use HasFactory, Notifiable, HasUlids;
+
+    protected array $auditExclude = [
+        'password',
+        'remember_token',
+        'must_setup_token',
+    ];
 
     public $incrementing = false;
 

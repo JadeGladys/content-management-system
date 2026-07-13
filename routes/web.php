@@ -15,3 +15,5 @@ require __DIR__.'/career.php';
 require __DIR__.'/article.php';
 
 require __DIR__.'/media.php';
+
+require __DIR__.'/audit.php';

@@ -181,7 +181,11 @@ class ArticleService
             );
 
             $article->update($seoResult['payload']);
+            
             $article->tags()->sync($resolvedTagIds);
+            if (! empty($resolvedTagNames)) {
+                $article->writeAudit('updated', ['tags' => []], ['tags' => $resolvedTagNames]);
+            }
 
             $this->articleSeoService->logGeneratedFields(
                 $article,
@@ -190,6 +194,10 @@ class ArticleService
                 $isGeneratingSeo ? 'generated' : 'created'
             );
 
+            if ($isPublishing) {
+                $article->auditAction('published');
+            }
+            
             Log::info('Article created.', [
                 'actor_id' => $actor->id,
                 'article_id' => $article->id,
@@ -258,6 +266,10 @@ class ArticleService
                 'archived_at' => $article->archived_at,
             ]);
 
+            if ($article->wasChanged('status') && $article->status === 'published') {
+                $article->auditAction('published');
+            }
+
             $article->load('category');
 
             $seoResult = $this->articleSeoService->buildPayload(
@@ -277,7 +289,15 @@ class ArticleService
                 $isGeneratingSeo ? 'generated' : 'updated'
             );
 
+            $oldTags = $article->tags()->orderBy('name')->pluck('name')->all();
+
             $article->tags()->sync($resolvedTagIds);
+
+            $newTags = $article->tags()->orderBy('name')->pluck('name')->all();
+
+            if ($oldTags !== $newTags) {
+                $article->writeAudit('updated', ['tags' => $oldTags], ['tags' => $newTags]);
+            }
 
             Log::info('Article updated.', [
                 'actor_id' => $actor->id,
@@ -352,6 +372,12 @@ class ArticleService
             'archived_at' => $targetStatus === 'archived' ? now() : null,
             'updated_by' => $actor->id,
         ]);
+
+        $article->auditAction(match ($targetStatus) {
+            'archived' => 'archived',
+            'draft' => 'restored to draft',
+            default => $targetStatus,
+        });
 
         Log::info('Article status updated.', [
             'actor_id' => $actor->id,

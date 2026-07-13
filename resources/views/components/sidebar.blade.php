@@ -36,9 +36,16 @@
     ])->filter();
 
     $toolItems = collect([
-        ['label' => 'Audit', 'icon' => 'shield', 'route' => null],
+        $user?->role === 'admin'
+            ? [
+                'label' => 'Audit',
+                'icon' => 'shield',
+                'route' => route('audit.index'),
+                'active' => request()->routeIs('audit.*'),
+            ]
+            : null,
         ['label' => 'Analytics', 'icon' => 'chart', 'route' => null],
-    ]);
+    ])->filter();
 
     $renderSidebarIcon = function ($icon) {
         return match ($icon) {
@@ -114,19 +121,35 @@
 
                 <div data-tools-panel class="mt-1.5 space-y-1.5 pl-2">
                     @foreach ($toolItems as $item)
-                        <button
-                            type="button"
-                            title="{{ $item['label'] }}"
-                            data-sidebar-link
-                            class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-500 transition hover:bg-white/5 hover:text-slate-300"
-                        >
-                            <span data-sidebar-link-icon class="shrink-0 text-slate-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                                    {!! $renderSidebarIcon($item['icon']) !!}
-                                </svg>
-                            </span>
-                            <span data-sidebar-label>{{ $item['label'] }}</span>
-                        </button>
+                        @if ($item['route'])
+                            <a
+                                href="{{ $item['route'] }}"
+                                title="{{ $item['label'] }}"
+                                data-sidebar-link
+                                class="{{ ($item['active'] ?? false) ? 'bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'text-slate-400 hover:bg-white/5 hover:text-white' }} flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#635bff]"
+                            >
+                                <span data-sidebar-link-icon class="{{ ($item['active'] ?? false) ? 'text-[#635bff]' : 'text-slate-400' }} shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                        {!! $renderSidebarIcon($item['icon']) !!}
+                                    </svg>
+                                </span>
+                                <span data-sidebar-label>{{ $item['label'] }}</span>
+                            </a>
+                        @else
+                            <button
+                                type="button"
+                                title="{{ $item['label'] }}"
+                                data-sidebar-link
+                                class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-500 transition hover:bg-white/5 hover:text-slate-300"
+                            >
+                                <span data-sidebar-link-icon class="shrink-0 text-slate-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                        {!! $renderSidebarIcon($item['icon']) !!}
+                                    </svg>
+                                </span>
+                                <span data-sidebar-label>{{ $item['label'] }}</span>
+                            </button>
+                        @endif
                     @endforeach
                 </div>
             </details>

@@ -21,9 +21,9 @@ class PasswordTokenService
             ->where('user_id', $user->id)
             ->where('type', $type)
             ->whereNull('used_at')
-            ->update([
-                'used_at' => now(),
-            ]);
+            ->get()
+            ->each(fn ($token) => $token->update(['used_at' => now()]))
+            ->count();
 
         if ($invalidatedCount > 0) {
             Log::info('Existing password tokens invalidated.', [

@@ -199,19 +199,30 @@ class DashboardService
         $articles = $this->articleBaseQuery($actor)
             ->where('status', 'draft')
             ->where('updated_at', '<', $threshold)
-            ->get(['title', 'updated_at']);
+            ->get(['id', 'title', 'updated_at'])
+            ->map(fn ($item) => [
+                'title' => $item->title,
+                'updated_at' => $item->updated_at,
+                'edit_url' => route('articles.edit', $item->id),
+            ]);
 
         $careers = $this->careerBaseQuery($actor)
             ->where('status', 'draft')
             ->where('updated_at', '<', $threshold)
-            ->get(['title', 'updated_at']);
+            ->get(['id', 'title', 'updated_at'])
+            ->map(fn ($item) => [
+                'title' => $item->title,
+                'updated_at' => $item->updated_at,
+                'edit_url' => route('careers.edit', $item->id),
+            ]);
 
         return $articles->concat($careers)
             ->sortBy('updated_at')
             ->take($limit)
-            ->map(fn ($item) => [
-                'title' => $item->title,
-                'days_stale' => (int) $item->updated_at->diffInDays(now()),
+            ->map(fn (array $item) => [
+                'title' => $item['title'],
+                'days_stale' => (int) $item['updated_at']->diffInDays(now()),
+                'edit_url' => $item['edit_url'],
             ])
             ->values()
             ->all();

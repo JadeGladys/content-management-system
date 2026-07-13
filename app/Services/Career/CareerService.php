@@ -29,7 +29,8 @@ class CareerService
     {
         $publishedFrom = $filters['published_from'] ?? null;
         $publishedTo = $filters['published_to'] ?? null;
-        unset($filters['published_from'], $filters['published_to']);
+        $expired = $filters['expired'] ?? null;
+        unset($filters['published_from'], $filters['published_to'], $filters['expired']);
 
         $filters = $this->normalizeFilters($filters);
 
@@ -91,10 +92,28 @@ class CareerService
             $query->whereDate('published_at', '<=', $publishedTo);
         }
 
+        if (! empty($expired)) {
+            $query->where('status', 'published')
+                ->whereNotNull('deadline')
+                ->where('deadline', '<', now());
+        }
+
         return $query
             ->latest('updated_at')
             ->paginate(8)
             ->withQueryString();
+    }
+
+    public function countExpiredPublishedCareers(User $actor): int
+    {
+        return Career::query()
+            ->when($actor->role === 'editor', function ($query) use ($actor) {
+                $query->where('created_by', $actor->id);
+            })
+            ->where('status', 'published')
+            ->whereNotNull('deadline')
+            ->where('deadline', '<', now())
+            ->count();
     }
 
     protected function normalizeFilters(array $filters): array
@@ -166,6 +185,10 @@ class CareerService
                 $isGeneratingSeo ? 'generated' : 'created'
             );
 
+            if ($isPublishing) {
+                $career->auditAction('published');
+            }
+            
             Log::info('Career created.', [
                 'actor_id' => $actor->id,
                 'career_id' => $career->id,
@@ -221,6 +244,10 @@ class CareerService
                     ? ($career->published_at ?? now())
                     : $career->published_at,
             ]);
+
+            if ($career->wasChanged('status') && $career->status === 'published') {
+                $career->auditAction('published');
+            }
 
             $career->load('category');
 
@@ -308,6 +335,12 @@ class CareerService
             'closed_at' => $targetStatus === 'closed' ? now() : null,
             'updated_by' => $actor->id,
         ]);
+
+        $career->auditAction(match ($targetStatus) {
+            'closed' => 'closed',
+            'draft' => 'restored to draft',
+            default => $targetStatus,
+        });
 
         Log::info('Career status updated.', [
             'actor_id' => $actor->id,

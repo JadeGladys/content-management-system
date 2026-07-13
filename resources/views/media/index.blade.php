@@ -54,7 +54,15 @@
                             value="{{ $search }}"
                             placeholder="Search..."
                             class="w-full text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                            list="media-search-suggestions"
+                            autocomplete="off"
                         />
+
+                        <datalist id="media-search-suggestions">
+                            @foreach ($searchSuggestions as $suggestion)
+                                <option value="{{ $suggestion }}"></option>
+                            @endforeach
+                        </datalist>
 
                         @if ($search)
                             <button

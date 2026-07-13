@@ -2,17 +2,20 @@
 
 namespace Database\Seeders;
 
+use App\Models\AuditLog; 
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
-            BootstrapAdminSeeder::class,
-            ArticleCategorySeeder::class,
-            CareerCategorySeeder::class,
-            TagSeeder::class,
-        ]);
+        AuditLog::withoutRecording(function () { 
+            $this->call([
+                BootstrapAdminSeeder::class,
+                ArticleCategorySeeder::class,
+                CareerCategorySeeder::class,
+                TagSeeder::class,
+            ]);
+        });
     }
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Media;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Media\StoreMediaRequest;
+use App\Models\Media;
+use App\Models\User;
 use App\Services\Media\MediaService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +30,20 @@ class MediaController extends Controller
             'media' => $this->mediaService->getPaginatedMedia($search),
             'search' => $search,
             'viewMode' => $viewMode,
+            'searchSuggestions' => Media::query()
+                ->whereNotNull('file_name')
+                ->orderBy('file_name')
+                ->pluck('file_name')
+                ->merge(
+                    User::query()
+                        ->whereIn('id', Media::query()->select('uploaded_by'))
+                        ->orderBy('name')
+                        ->pluck('name')
+                )
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
         ]);
     }
 

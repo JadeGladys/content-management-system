@@ -117,50 +117,61 @@
             <div class="flex items-center justify-between px-6 pt-6">
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Recent Content</h3>
-                    <p class="text-sm text-slate-500">Latest articles and careers</p>
                 </div>
             </div>
 
             <div class="max-w-full overflow-x-auto">
-                <table class="mt-4 w-full text-left text-sm">
+                <table class="mt-4 w-full min-w-[560px] table-fixed text-left text-sm">
+                    <colgroup>
+                        <col class="w-[28%]">
+                        <col class="w-[11%]">
+                        <col class="w-[16%]">
+                        <col class="w-[19%]">
+                        <col class="w-[13%]">
+                        <col class="w-[14%]">
+                    </colgroup>
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
                         <tr>
-                            <th class="px-6 py-3 font-semibold">Title</th>
-                            <th class="px-4 py-3 font-semibold">Type</th>
-                            <th class="px-4 py-3 font-semibold">Category</th>
-                            <th class="px-4 py-3 font-semibold">Author</th>
-                            <th class="px-4 py-3 font-semibold">Status</th>
-                            <th class="px-6 py-3 font-semibold">Updated</th>
+                            <th class="px-4 py-3 font-semibold">Title</th>
+                            <th class="px-3 py-3 font-semibold">Type</th>
+                            <th class="px-3 py-3 font-semibold">Category</th>
+                            <th class="px-3 py-3 font-semibold">Author</th>
+                            <th class="px-3 py-3 font-semibold">Status</th>
+                            <th class="px-3 py-3 font-semibold">Updated</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($recent_content as $item)
                             <tr class="transition hover:bg-slate-50/70">
-                                <td class="max-w-[280px] truncate px-6 py-3.5 font-medium text-slate-800">{{ $item['title'] }}</td>
-                                <td class="px-4 py-3.5">
-                                    <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $item['type'] === 'Article' ? 'bg-indigo-50 text-indigo-600' : 'bg-teal-50 text-teal-600' }}">
+                                <td class="px-4 py-3.5 font-medium text-slate-800">
+                                    <span class="block truncate" title="{{ $item['title'] }}">{{ $item['title'] }}</span>
+                                </td>
+                                <td class="px-3 py-3.5">
+                                    <span class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold {{ $item['type'] === 'Article' ? 'bg-indigo-50 text-indigo-600' : 'bg-teal-50 text-teal-600' }}">
                                         {{ $item['type'] }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3.5 text-slate-500">{{ $item['category'] ?? '—' }}</td>
-                                <td class="px-4 py-3.5">
-                                    <span class="flex items-center gap-2">
+                                <td class="px-3 py-3.5 text-slate-500">
+                                    <span class="block truncate" title="{{ $item['category'] ?? '—' }}">{{ $item['category'] ?? '—' }}</span>
+                                </td>
+                                <td class="px-3 py-3.5">
+                                    <span class="flex min-w-0 items-center gap-2">
                                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white {{ $avatarPalette[$loop->index % count($avatarPalette)] }}">
                                             {{ $item['author_initials'] ?: '?' }}
                                         </span>
-                                        <span class="text-slate-600">{{ $item['author'] ?? 'Unknown' }}</span>
+                                        <span class="truncate text-slate-600">{{ $item['author'] ?? 'Unknown' }}</span>
                                     </span>
                                 </td>
-                                <td class="px-4 py-3.5">
-                                    <span class="rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $statusClasses[$item['status']] ?? $statusClasses['closed'] }}">
+                                <td class="px-3 py-3.5">
+                                    <span class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $statusClasses[$item['status']] ?? $statusClasses['closed'] }}">
                                         {{ $item['status'] }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-3.5 text-slate-400">{{ $item['updated_human'] }}</td>
+                                <td class="whitespace-nowrap px-3 py-3.5 text-slate-400">{{ $item['updated_human'] }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-sm text-slate-500">No content yet.</td>
+                                <td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">No content yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -185,7 +196,7 @@
                                 default => ['border-slate-100 bg-slate-50/60', 'text-slate-500'],
                             };
                         @endphp
-                        <div class="flex items-center justify-between rounded-xl border px-4 py-3 {{ $boxClasses }}">
+                        <a href="{{ route('careers.index') }}" class="flex items-center justify-between rounded-xl border px-4 py-3 transition hover:-translate-y-0.5 {{ $boxClasses }}">
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-semibold text-slate-800">{{ $career['title'] }}</p>
                                 <p class="truncate text-xs text-slate-500">
@@ -195,7 +206,7 @@
                             <span class="ml-3 shrink-0 text-xs font-bold {{ $textClasses }}">
                                 {{ $career['days_left'] === 0 ? 'Today' : $career['days_left'] . ' day' . ($career['days_left'] === 1 ? '' : 's') . ' left' }}
                             </span>
-                        </div>
+                        </a>
                     @empty
                         <p class="text-sm text-slate-500">No deadlines in the next 14 days.</p>
                     @endforelse
@@ -211,10 +222,10 @@
 
                 <div class="mt-4 space-y-3 text-sm">
                     @forelse ($stale_drafts as $draft)
-                        <div class="flex items-center justify-between">
-                            <p class="truncate pr-3 font-medium text-slate-700">{{ $draft['title'] }}</p>
+                        <a href="{{ $draft['edit_url'] }}" class="group flex items-center justify-between">
+                            <p class="truncate pr-3 font-medium text-slate-700 transition group-hover:text-blue-600">{{ $draft['title'] }}</p>
                             <span class="shrink-0 text-xs text-slate-400">{{ $draft['days_stale'] }} days</span>
-                        </div>
+                        </a>
                     @empty
                         <p class="text-sm text-slate-500">No stale drafts — nice work.</p>
                     @endforelse
@@ -225,13 +236,13 @@
 
     {{-- Categories + tags + media + team --}}
     <div class="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 {{ $team_activity !== null ? 'xl:grid-cols-4' : 'xl:grid-cols-3' }}">
-        <div class="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm">
             <h3 class="text-base font-bold text-slate-900">Top Categories</h3>
             <p class="text-sm text-slate-500">By article count</p>
             <div id="categories-bar" class="mt-2 h-[210px]"></div>
         </div>
 
-        <div class="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm">
             <h3 class="text-base font-bold text-slate-900">Popular Tags</h3>
             <p class="text-sm text-slate-500">Most used across articles</p>
 
@@ -246,7 +257,7 @@
             </div>
         </div>
 
-        <div class="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm">
             <h3 class="text-base font-bold text-slate-900">Media Library</h3>
             <p class="text-sm text-slate-500">{{ number_format($media_breakdown['total_files']) }} files · {{ $media_breakdown['total_size'] }} used</p>
             <div id="media-donut" class="mx-auto mt-2 h-[160px]"></div>
@@ -266,7 +277,7 @@
         </div>
 
         @if ($team_activity !== null)
-            <div class="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 class="text-base font-bold text-slate-900">Team Activity</h3>
                 <p class="text-sm text-slate-500">Content by team member</p>
 
@@ -391,15 +402,21 @@
                 series: [{ name: 'Articles', data: topCategories.series }],
                 colors: ['#6366f1'],
                 plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '55%' } },
-                dataLabels: { enabled: false },
-                grid: { borderColor: '#eef2f7', strokeDashArray: 4 },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (value) => Math.round(value),
+                    style: { fontSize: '12px', fontWeight: 600 },
+                    dropShadow: { enabled: false },
+                },
+                grid: { show: false },
                 xaxis: {
                     categories: topCategories.labels,
-                    labels: { style: { colors: '#94a3b8', fontSize: '12px' } },
+                    labels: { show: false },
                     axisBorder: { show: false },
                     axisTicks: { show: false },
                 },
                 yaxis: { labels: { style: { colors: '#64748b', fontSize: '12px' } } },
+                tooltip: { enabled: false },
             }).render();
         }
 

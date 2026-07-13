@@ -26,6 +26,27 @@
                 </div>
             </div>
 
+            @if ($expiredCount > 0)
+                <div class="mb-5 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                    </svg>
+                    <p class="text-rose-700">
+                        <span class="font-bold">{{ $expiredCount }}</span>
+                        published career{{ $expiredCount === 1 ? ' has' : 's have' }} passed their deadline and should be closed or extended.
+                    </p>
+                    @if (empty($filters['expired']))
+                        <a href="{{ route('careers.index', ['expired' => 1]) }}" class="ml-auto shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm transition hover:bg-rose-100">
+                            Review
+                        </a>
+                    @else
+                        <a href="{{ route('careers.index') }}" class="ml-auto shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100">
+                            Show all
+                        </a>
+                    @endif
+                </div>
+            @endif
+
             <div class="mb-5 flex items-center gap-4">
                 <form method="GET" action="{{ route('careers.index') }}" class="min-w-0 flex-1 max-w-sm" role="search">
                     @foreach (($filters['category'] ?? []) as $category)
@@ -54,6 +75,10 @@
 
                     @if (! empty($filters['published_to']))
                         <input type="hidden" name="published_to" value="{{ $filters['published_to'] }}">
+                    @endif
+
+                    @if (! empty($filters['expired']))
+                        <input type="hidden" name="expired" value="1">
                     @endif
 
                     <div class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
@@ -153,7 +178,7 @@
                             <col class="w-[14%]">
                             <col class="w-[12%]">
                             <col class="w-[12%]">
-                            <col class="w-[12%]">
+                            <col class="w-[16%]">
                         </colgroup>
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
                             <tr>
@@ -269,6 +294,20 @@
                                                     </svg>
                                                     View
                                                 </a>
+                                            @endif
+
+                                            @if ($listedCareer->status === 'published' && $listedCareer->deadline?->isPast())
+                                                <form method="POST" action="{{ route('careers.status.update', $listedCareer) }}">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="target_status" value="closed">
+                                                    <button
+                                                        type="submit"
+                                                        class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-600 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100"
+                                                    >
+                                                        Close
+                                                    </button>
+                                                </form>
                                             @endif
                                         </div>
                                     </td>

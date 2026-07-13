@@ -46,6 +46,7 @@ class CareerController extends Controller
 
         $filters['published_from'] = $request->string('published_from')->toString();
         $filters['published_to'] = $request->string('published_to')->toString();
+        $filters['expired'] = $request->boolean('expired');
 
         $hasActiveFilters = collect($filters)->contains(fn ($values) => ! empty($values));
 
@@ -84,6 +85,7 @@ class CareerController extends Controller
 
         return view('careers.index', [
             'careers' => $this->careerService->getPaginatedCareers($search, $filters, $request->user()),
+            'expiredCount' => $this->careerService->countExpiredPublishedCareers($request->user()),
             'search' => $search,
             'filters' => $filters,
             'hasActiveFilters' => $hasActiveFilters,

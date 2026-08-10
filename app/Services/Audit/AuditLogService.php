@@ -10,6 +10,7 @@ use App\Models\CareerCategory;
 use App\Models\Media;
 use App\Models\Tag;
 use App\Models\User;
+use App\Models\ThemeSetting;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,7 @@ class AuditLogService
         'article_category' => ArticleCategory::class,
         'career_category' => CareerCategory::class,
         'user' => User::class,
+        'theme_setting' => ThemeSetting::class,
     ];
 
     public const RESTORABLE_TYPES = [
@@ -50,9 +52,13 @@ class AuditLogService
         $query = AuditLog::query()
             ->with(['user:id,name', 'auditable'])
             ->when($search, function ($query) use ($search) {
-                $query->where(function ($innerQuery) use ($search) {
+                $actionSearch = str_replace(' ', '_', $search);
+                $typeSearch = str_replace(' ', '', $search);
+
+                $query->where(function ($innerQuery) use ($search, $actionSearch, $typeSearch) {
                     $innerQuery
-                        ->where('action', 'ilike', "%{$search}%")
+                        ->where('action', 'ilike', "%{$actionSearch}%")
+                        ->orWhere('auditable_type', 'ilike', "%{$typeSearch}%")
                         ->orWhereRaw("new_values->>'email' ilike ?", ["%{$search}%"])
                         ->orWhereHas('user', function ($userQuery) use ($search) {
                             $userQuery->where('name', 'ilike', "%{$search}%");

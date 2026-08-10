@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
                 ArticleCategorySeeder::class,
                 CareerCategorySeeder::class,
                 TagSeeder::class,
+                ThemeSettingSeeder::class,
             ]);
         });
     }

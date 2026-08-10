@@ -1,6 +1,16 @@
 @extends('layouts.admin', ['title' => 'Audit'])
 
 @section('content')
+    @php
+        $flattenAuditValue = function ($value) {
+            $normalized = is_array($value) ? $value : (json_decode((string) $value, true) ?? $value);
+
+            return is_array($normalized)
+                ? collect($normalized)->flatten()->filter(fn ($item) => is_string($item) && strlen($item) > 12)->implode(' ')
+                : (string) $normalized;
+        };
+    @endphp
+
     <div class="my-4 px-4 md:px-6">
         <div class="mx-auto max-w-7xl min-w-0">
             <div class="mb-8 rounded-xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/70 px-4 py-4 shadow-sm md:px-6">
@@ -125,8 +135,8 @@
                             <col class="w-[12%]">
                             <col class="w-[17%]">
                             <col class="w-[13%]">
-                            <col class="w-[30%]">
-                            <col class="w-[21%]">
+                            <col class="w-[40%]">
+                            <col class="w-[12%]">
                             <col class="w-[7%]">
                         </colgroup>
                         <thead class="bg-slate-50 text-left text-[13px] font-semibold text-slate-900">
@@ -171,7 +181,8 @@
                                     $recordLabel = $auditable?->title
                                         ?? $auditable?->name
                                         ?? $auditable?->file_name
-                                        ?? ($log->old_values['title'] ?? $log->old_values['name'] ?? $log->old_values['file_name'] ?? null);
+                                        ?? $auditable?->key
+                                        ?? ($log->old_values['title'] ?? $log->old_values['name'] ?? $log->old_values['file_name'] ?? $log->old_values['key'] ?? null);
 
                                     $recordUrl = match (true) {
                                         $auditable && $log->auditable_type === \App\Models\Article::class => route('articles.edit', $auditable),
@@ -272,16 +283,28 @@
                                                                 @continue(in_array($field, ['id', 'created_by', 'updated_by'], true))
 
                                                                 @php
-                                                                    $normalized = is_array($value) ? $value : (json_decode((string) $value, true) ?? $value);
-                                                                    $displayValue = is_array($normalized)
-                                                                        ? collect($normalized)->flatten()->filter(fn ($item) => is_string($item) && strlen($item) > 12)->implode(' ')
-                                                                        : (string) $normalized;
+                                                                    $displayValue = $flattenAuditValue($value);
                                                                 @endphp
                                                                 <div class="flex gap-2">
                                                                     <span class="w-32 shrink-0 font-mono text-slate-400">{{ $field }}</span>
-                                                                    <span class="min-w-0 break-words rounded bg-rose-50 px-1.5 font-mono text-rose-600 {{ $log->action !== 'deleted' ? 'line-through' : '' }}">
-                                                                        {{ \Illuminate\Support\Str::limit($displayValue, 160) ?: '—' }}
-                                                                    </span>
+                                                                    <div class="min-w-0">
+                                                                        <span class="break-words rounded bg-rose-50 px-1.5 font-mono text-rose-600 {{ $log->action !== 'deleted' ? 'line-through' : '' }}">
+                                                                            {{ \Illuminate\Support\Str::limit($displayValue, 240) ?: '—' }}
+                                                                        </span>
+
+                                                                        @if (\Illuminate\Support\Str::length($displayValue) > 240)
+                                                                            <button
+                                                                                type="button"
+                                                                                class="mt-1.5 flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-blue-500 hover:text-blue-600"
+                                                                                data-diff-field="{{ $field }}"
+                                                                                data-diff-old="{{ $flattenAuditValue($log->old_values[$field] ?? '') }}"
+                                                                                data-diff-new="{{ $flattenAuditValue($log->new_values[$field] ?? '') }}"
+                                                                                data-diff-context="{{ trim(($typeLabel ? $typeLabel . ' · ' : '') . ($recordLabel ?? '—')) }} · {{ $log->user?->name ?? 'Unknown' }} · {{ $log->created_at->format('d M Y, H:i') }}"
+                                                                            >
+                                                                                View full change
+                                                                            </button>
+                                                                        @endif
+                                                                    </div>
                                                                 </div>
                                                             @endforeach
                                                         </div>
@@ -309,16 +332,28 @@
                                                             @continue(in_array($field, ['id', 'created_by', 'updated_by'], true))
 
                                                             @php
-                                                                $normalized = is_array($value) ? $value : (json_decode((string) $value, true) ?? $value);
-                                                                $displayValue = is_array($normalized)
-                                                                    ? collect($normalized)->flatten()->filter(fn ($item) => is_string($item) && strlen($item) > 12)->implode(' ')
-                                                                    : (string) $normalized;
+                                                                $displayValue = $flattenAuditValue($value);
                                                             @endphp
                                                             <div class="flex gap-2">
                                                                 <span class="w-32 shrink-0 font-mono text-slate-400">{{ $field }}</span>
-                                                                <span class="min-w-0 break-words rounded bg-emerald-50 px-1.5 font-mono text-emerald-700">
-                                                                    {{ \Illuminate\Support\Str::limit($displayValue, 160) ?: '—' }}
-                                                                </span>
+                                                                <div class="min-w-0">
+                                                                    <span class="break-words rounded bg-emerald-50 px-1.5 font-mono text-emerald-700">
+                                                                        {{ \Illuminate\Support\Str::limit($displayValue, 240) ?: '—' }}
+                                                                    </span>
+
+                                                                    @if (\Illuminate\Support\Str::length($displayValue) > 240)
+                                                                        <button
+                                                                            type="button"
+                                                                            class="mt-1.5 flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-blue-500 hover:text-blue-600"
+                                                                            data-diff-field="{{ $field }}"
+                                                                            data-diff-old="{{ $flattenAuditValue($log->old_values[$field] ?? '') }}"
+                                                                            data-diff-new="{{ $flattenAuditValue($log->new_values[$field] ?? '') }}"
+                                                                            data-diff-context="{{ trim(($typeLabel ? $typeLabel . ' · ' : '') . ($recordLabel ?? '—')) }} · {{ $log->user?->name ?? 'Unknown' }} · {{ $log->created_at->format('d M Y, H:i') }}"
+                                                                        >
+                                                                            View full change
+                                                                        </button>
+                                                                    @endif
+                                                                </div>
                                                             </div>
                                                             @endforeach
                                                         </div>
@@ -403,6 +438,57 @@
         :search="$search"
         :fields="$filterFields"
     />
+
+    <div id="auditDiffModal" class="pointer-events-none fixed inset-0 z-[1000] flex items-center justify-center p-4" aria-hidden="true">
+        <div id="auditDiffBackdrop" class="absolute inset-0 bg-[rgba(15,23,42,0.4)] opacity-0 transition-opacity duration-200"></div>
+
+        <div
+            id="auditDiffPanel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auditDiffTitle"
+            class="relative z-10 w-full max-w-2xl scale-95 rounded-2xl border border-slate-200 bg-white opacity-0 shadow-2xl transition-all duration-200"
+        >
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                <div>
+                    <h2 id="auditDiffTitle" class="text-base font-bold text-slate-900">
+                        Full change — <span id="auditDiffField" class="font-mono text-sm font-semibold text-blue-600"></span>
+                    </h2>
+                    <p id="auditDiffContext" class="text-xs text-slate-500"></p>
+                </div>
+
+                <button
+                    type="button"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    aria-label="Close"
+                    data-diff-close
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="max-h-[60vh] overflow-y-auto px-6 py-5">
+                <div class="mb-3 flex items-center gap-4 text-[11px] font-semibold">
+                    <span class="flex items-center gap-1.5 text-rose-600"><span class="inline-block h-3 w-6 rounded bg-rose-100"></span> removed</span>
+                    <span class="flex items-center gap-1.5 text-emerald-700"><span class="inline-block h-3 w-6 rounded bg-emerald-100"></span> added</span>
+                </div>
+
+                <div id="auditDiffOutput" class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-sm leading-7 text-slate-700"></div>
+            </div>
+
+            <div class="flex justify-end border-t border-slate-200 px-6 py-4">
+                <button
+                    type="button"
+                    class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    data-diff-close
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -430,6 +516,99 @@
 
             searchInput.value = '';
             searchInput.form.submit();
+        });
+
+        const diffModal = document.getElementById('auditDiffModal');
+        const diffBackdrop = document.getElementById('auditDiffBackdrop');
+        const diffPanel = document.getElementById('auditDiffPanel');
+
+        const wordDiff = (oldStr, newStr) => {
+            const a = oldStr.split(/\s+/).filter(Boolean);
+            const b = newStr.split(/\s+/).filter(Boolean);
+            const lcs = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+
+            for (let i = a.length - 1; i >= 0; i--) {
+                for (let j = b.length - 1; j >= 0; j--) {
+                    lcs[i][j] = a[i] === b[j] ? lcs[i + 1][j + 1] + 1 : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+                }
+            }
+
+            const parts = [];
+            let i = 0;
+            let j = 0;
+
+            while (i < a.length && j < b.length) {
+                if (a[i] === b[j]) {
+                    parts.push({ type: 'same', word: a[i] });
+                    i++;
+                    j++;
+                } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
+                    parts.push({ type: 'del', word: a[i] });
+                    i++;
+                } else {
+                    parts.push({ type: 'ins', word: b[j] });
+                    j++;
+                }
+            }
+
+            while (i < a.length) parts.push({ type: 'del', word: a[i++] });
+            while (j < b.length) parts.push({ type: 'ins', word: b[j++] });
+
+            return parts;
+        };
+
+        const renderDiff = (parts) => parts.map(({ type, word }) => {
+            const safe = word.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+            if (type === 'del') {
+                return `<del class="rounded bg-rose-100 px-0.5 text-rose-700">${safe}</del>`;
+            }
+
+            if (type === 'ins') {
+                return `<ins class="rounded bg-emerald-100 px-0.5 font-semibold text-emerald-700 no-underline">${safe}</ins>`;
+            }
+
+            return safe;
+        }).join(' ');
+
+        const openDiffModal = (button) => {
+            document.getElementById('auditDiffField').textContent = button.dataset.diffField;
+            document.getElementById('auditDiffContext').textContent = button.dataset.diffContext;
+            document.getElementById('auditDiffOutput').innerHTML = renderDiff(
+                wordDiff(button.dataset.diffOld || '', button.dataset.diffNew || '')
+            );
+
+            diffModal.classList.remove('pointer-events-none');
+            diffModal.setAttribute('aria-hidden', 'false');
+
+            requestAnimationFrame(() => {
+                diffBackdrop.classList.remove('opacity-0');
+                diffPanel.classList.remove('opacity-0', 'scale-95');
+            });
+        };
+
+        const closeDiffModal = () => {
+            diffBackdrop.classList.add('opacity-0');
+            diffPanel.classList.add('opacity-0', 'scale-95');
+            diffModal.setAttribute('aria-hidden', 'true');
+
+            setTimeout(() => diffModal.classList.add('pointer-events-none'), 200);
+        };
+
+        document.querySelectorAll('[data-diff-field]').forEach((button) => {
+            button.addEventListener('click', () => openDiffModal(button));
+        });
+
+        document.querySelectorAll('[data-diff-close]').forEach((button) => {
+            button.addEventListener('click', closeDiffModal);
+        });
+
+        diffBackdrop.addEventListener('click', closeDiffModal);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeDiffModal();
+            }
         });
     </script>
 @endpush

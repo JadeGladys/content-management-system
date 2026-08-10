@@ -43,6 +43,7 @@ class AuditLogController extends Controller
         'article_category' => 'Article category',
         'career_category' => 'Career category',
         'user' => 'User',
+        'theme_setting' => 'Theme',
     ];
 
     public function index(Request $request): View
@@ -102,6 +103,7 @@ class AuditLogController extends Controller
             'filterFields' => $filterFields,
             'searchSuggestions' => collect(self::ACTION_LABELS)
                 ->values()
+                ->merge(collect(self::TYPE_LABELS)->values())
                 ->merge(User::query()->orderBy('name')->pluck('name'))
                 ->filter()
                 ->unique()

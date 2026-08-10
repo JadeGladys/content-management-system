@@ -17,3 +17,5 @@ require __DIR__.'/article.php';
 require __DIR__.'/media.php';
 
 require __DIR__.'/audit.php';
+
+require __DIR__.'/theme.php';
